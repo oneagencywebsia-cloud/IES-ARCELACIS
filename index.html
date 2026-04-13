@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="App oficial del IES Arcelacis de Santaella, Córdoba. Información, departamentos, profesorado, oferta educativa, actividades y más.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IES Arcelacis">
+<meta name="format-detection" content="telephone=no">
+<meta name="msapplication-tap-highlight" content="no">
+<title>IES Arcelacis — Santaella</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png">
+<link rel="apple-touch-icon" href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png">
+
+<!-- Preconnect for fonts (critical resource hint) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- Font: load with display=swap to prevent FOIT -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Critical CSS: inlined — eliminates render-blocking -->
+<style>
+/* CRITICAL: Reset + Nav + Hero — inlined for zero render-blocking */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --s900:#0f172a;--s800:#1e293b;--s700:#334155;--s600:#475569;
+  --s500:#64748b;--s400:#94a3b8;--s300:#cbd5e1;--s200:#e2e8f0;
+  --s100:#f1f5f9;--s50:#f8fafc;--w:#fff;
+  --b700:#1d4ed8;--b600:#2563eb;--b500:#3b82f6;--b50:#eff6ff;--g500:#22c55e;
+  --r:12px;--rl:16px;--rxl:20px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.06);--sh:0 2px 8px rgba(0,0,0,.08);
+  --sh-lg:0 8px 24px rgba(0,0,0,.10);--sh-xl:0 20px 48px rgba(0,0,0,.16);
+  --nav-h:56px;--bot-h:64px;--safe-bot:env(safe-area-inset-bottom,0px);
+  --ease-out-expo:cubic-bezier(.16,1,.3,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --ease-smooth:cubic-bezier(.4,0,.2,1);
+  --dur-fast:.15s;--dur-mid:.35s;--dur-slow:.55s;
+}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent;text-size-adjust:100%;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--s50);color:var(--s700);line-height:1.6;overflow-x:hidden;padding-bottom:calc(var(--bot-h) + var(--safe-bot));-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overscroll-behavior-y:contain}
+img{max-width:100%;height:auto;display:block}
+a{text-decoration:none;color:inherit;-webkit-touch-callout:none}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+ul,ol{list-style:none}
+/* Critical: Nav */
+.topnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:rgba(15,23,42,.0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid transparent;padding-top:env(safe-area-inset-top,0);transition:background var(--dur-mid) var(--ease-smooth),backdrop-filter var(--dur-mid) var(--ease-smooth),border-color var(--dur-mid) var(--ease-smooth);will-change:transform}
+.topnav.scrolled{background:rgba(15,23,42,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom-color:rgba(255,255,255,.06)}
+.topnav-brand{display:flex;align-items:center;gap:10px}
+.topnav-logo{width:32px;height:32px;border-radius:8px;object-fit:contain;background:white;padding:2px;flex-shrink:0}
+.topnav-title{font-size:.92rem;font-weight:700;color:var(--w);letter-spacing:-.3px}
+.topnav-actions{display:flex;gap:4px}
+.topnav-btn{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--s400);touch-action:manipulation}
+/* Critical: Hero */
+.hero{position:relative;padding:calc(var(--nav-h) + 40px) 20px 48px;background:var(--s900);overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url('https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg') center/cover;opacity:.12;transform:translate3d(0,var(--parallax-y,0px),0);will-change:transform}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.7) 0%,var(--s900) 100%)}
+.hero-inner{position:relative;z-index:1;max-width:600px;margin:0 auto;text-align:center}
+/* Critical: bottom nav to prevent CLS */
+.bottomnav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--bot-h) + var(--safe-bot));background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--s200);display:flex;align-items:flex-start;justify-content:space-around;z-index:100;padding-bottom:var(--safe-bot)}
+.bottomnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.58rem;font-weight:600;color:var(--s400);padding:10px 0 0;min-width:52px;touch-action:manipulation;-webkit-user-select:none;user-select:none;position:relative}
+.bottomnav-item.active{color:var(--b600)}
+.bottomnav-icon{font-size:1.15rem;line-height:1}
+/* Hero animations */
+@keyframes heroTitle{from{opacity:0;transform:translate3d(0,28px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes heroBadge{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes heroLogo{from{opacity:0;transform:translate3d(0,0,0) scale(.88)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.25);border-radius:100px;color:var(--b500);font-size:.72rem;font-weight:600;margin-bottom:20px;animation:heroBadge .5s var(--ease-out-expo) .1s both}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--g500);animation:pulse 2s ease-in-out infinite}
+.hero-logo{width:100px;height:100px;margin:0 auto 20px;border-radius:22px;background:white;padding:8px;box-shadow:0 8px 32px rgba(0,0,0,.3);animation:heroLogo .6s var(--ease-spring) .2s both}
+.hero-logo img{width:100%;height:100%;object-fit:contain;border-radius:14px}
+.hero h1{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:800;color:var(--w);margin-bottom:6px;letter-spacing:-.5px;animation:heroTitle .65s var(--ease-out-expo) .3s both}
+.hero-sub{font-size:.92rem;color:var(--s400);margin-bottom:20px;animation:heroTitle .65s var(--ease-out-expo) .42s both}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px;animation:heroTitle .65s var(--ease-out-expo) .54s both}
+.hero-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:12px 4px;text-align:center}
+.hero-stat-num{font-size:1.4rem;font-weight:800;color:var(--w);line-height:1;font-variant-numeric:tabular-nums}
+.hero-stat-label{font-size:.6rem;color:var(--s400);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-top:4px}
+.hero-cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;animation:heroTitle .65s var(--ease-out-expo) .66s both}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;background:var(--b600);color:white;font-weight:600;font-size:.85rem;border-radius:100px;touch-action:manipulation;box-shadow:0 4px 14px rgba(37,99,235,.35)}
+.btn-outline{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;background:rgba(255,255,255,.06);color:var(--s300);font-weight:600;font-size:.85rem;border-radius:100px;border:1px solid rgba(255,255,255,.12);touch-action:manipulation}
+@media(max-width:420px){.hero-stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<!-- Non-critical CSS: loaded async to unblock rendering -->
+<link rel="preload" href="styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="styles.css"></noscript>
+
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav" id="topNav" role="banner">
+  <div class="topnav-brand">
+    <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png"
+         alt="IES Arcelacis" class="topnav-logo" width="32" height="32" loading="eager" />
+    <div class="topnav-title">IES Arcelacis</div>
+  </div>
+  <div class="topnav-actions">
+    <a href="tel:957313455" class="topnav-btn" aria-label="Llamar al centro">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+    </a>
+    <a href="/cdn-cgi/l/email-protection#a293969592929696958cc7c6d7e2c8d7ccd6c3c6c7c3ccc6c3ced7c1cbc38cc7d1" class="topnav-btn" aria-label="Enviar email">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </a>
+    <a href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/" target="_blank" rel="noopener noreferrer" class="topnav-btn" aria-label="Abrir web del centro">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="inicio" role="main">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="hero-badge-dot" aria-hidden="true"></span>
+      Secretaría: Lunes a Viernes, 9:00 — 14:30
+    </div>
+    <div class="hero-logo">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png"
+           alt="Escudo IES Arcelacis" width="84" height="84" loading="eager" />
+    </div>
+    <h1>IES Arcelacis</h1>
+    <p class="hero-sub">Centro educativo público · Santaella, Córdoba</p>
+    <div class="hero-stats" aria-label="Cifras del centro">
+      <div class="hero-stat"><div class="hero-stat-num" data-target="16">0</div><div class="hero-stat-label">Deptos.</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" data-target="3">0</div><div class="hero-stat-label">Etapas</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" data-target="40">0</div><div class="hero-stat-label">Profesores</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" data-target="12">0</div><div class="hero-stat-label">Programas</div></div>
+    </div>
+    <div class="hero-cta">
+      <a href="#oferta" class="btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.657 2.686 3 6 3s6-1.343 6-3v-5"/></svg>
+        Oferta educativa
+      </a>
+      <a href="#contacto" class="btn-outline">Contactar</a>
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE EL CENTRO -->
+<section class="section" id="about">
+  <div class="section-header fade-up">
+    <div class="section-label">Nuestro centro</div>
+    <h2 class="section-title">IES Arcelacis</h2>
+    <p class="section-desc">Centro educativo público comprometido con una formación integral y de calidad en Santaella, Córdoba.</p>
+  </div>
+  <div class="about-card fade-up">
+    <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg"
+         alt="Fachada principal del IES Arcelacis con banderas" class="about-img" loading="lazy" width="800" height="220" />
+    <div class="about-body">
+      <h3>Educación con valores</h3>
+      <p>Situado en la C. Villargallegos de Santaella, nuestro centro ofrece ESO, Bachillerato y FP Básica en un entorno que fomenta el aprendizaje competencial, el trabajo en equipo y el compromiso social.</p>
+      <p>Con más de 40 profesionales y 16 departamentos, preparamos al alumnado para los retos académicos y personales del futuro.</p>
+      <div class="about-tags">
+        <span class="about-tag">Respeto</span>
+        <span class="about-tag">Responsabilidad</span>
+        <span class="about-tag">Excelencia</span>
+        <span class="about-tag">Igualdad</span>
+        <span class="about-tag">Tolerancia</span>
+        <span class="about-tag">Inclusión</span>
+      </div>
+    </div>
+  </div>
+  <div class="stats-row stagger">
+    <div class="stat-card fade-up"><div class="stat-num" data-target="16">0</div><div class="stat-label">Departamentos</div></div>
+    <div class="stat-card fade-up"><div class="stat-num" data-target="40">0</div><div class="stat-label">Profesores</div></div>
+    <div class="stat-card fade-up"><div class="stat-num" data-target="3">0</div><div class="stat-label">Etapas</div></div>
+    <div class="stat-card fade-up"><div class="stat-num" data-target="12">0</div><div class="stat-label">Programas</div></div>
+  </div>
+  <div class="gallery-scroll" style="margin-top:20px">
+    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" alt="Fachada principal" loading="lazy" /><div class="gallery-card-overlay"><span>Fachada principal</span><small>Entrada con banderas institucionales</small></div></div>
+    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Acceso al edificio" loading="lazy" /><div class="gallery-card-overlay"><span>Acceso principal</span><small>Escaleras de entrada al centro</small></div></div>
+    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5598-scaled.jpeg" alt="Biblioteca" loading="lazy" /><div class="gallery-card-overlay"><span>Biblioteca</span><small>"Today a Reader, Tomorrow a Leader"</small></div></div>
+    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines" loading="lazy" /><div class="gallery-card-overlay"><span>Jardines</span><small>Zonas verdes del centro</small></div></div>
+    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5596-scaled.jpeg" alt="Rampa de acceso" loading="lazy" /><div class="gallery-card-overlay"><span>Acceso lateral</span><small>Rampa accesible al edificio</small></div></div>
+    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/d96c1ae1-d928-44cb-afd9-d2c1d20a196e.jpeg" alt="Patio" loading="lazy" /><div class="gallery-card-overlay"><span>Patio del centro</span><small>Zona ajardinada con rosales</small></div></div>
+  </div>
+</section>
+
+<!-- EQUIPO DIRECTIVO -->
+<section class="section-dark" id="equipo">
+  <div class="section-dark-inner">
+    <div class="section-header fade-up">
+      <div class="section-label">Equipo directivo</div>
+      <h2 class="section-title">Dirección del centro</h2>
+      <p class="section-desc">Responsables de la gestión y coordinación del IES Arcelacis</p>
+    </div>
+    <div class="team-grid stagger">
+      <div class="team-card fade-up">
+        <div class="team-avatar"><img src="data:image/jpeg;base64,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" alt="M.ª del Carmen Rivilla Sauces" /></div>
+        <div>
+          <div class="team-name">M.ª del Carmen Rivilla Sauces</div>
+          <div class="team-role">Directora</div>
+          <div class="team-dept">Dpto. Lengua Castellana y Literatura</div>
+        </div>
+      </div>
+      <div class="team-card fade-up">
+        <div class="team-avatar"><img src="data:image/jpeg;base64,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" alt="Antonio Flores Saldaña" /></div>
+        <div>
+          <div class="team-name">Antonio Flores Saldaña</div>
+          <div class="team-role">Jefe de Estudios</div>
+          <div class="team-dept">Dpto. Educación Física</div>
+        </div>
+      </div>
+      <div class="team-card fade-up">
+        <div class="team-avatar"><img src="data:image/jpeg;base64,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" alt="Rosa García Jemes" /></div>
+        <div>
+          <div class="team-name">Rosa García Jemes</div>
+          <div class="team-role">Secretaria</div>
+          <div class="team-dept">Dpto. Lengua Castellana y Literatura</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:20px" class="fade-up">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:100px;color:var(--s400);font-size:.78rem">
+        <span class="hero-badge-dot" aria-hidden="true"></span>
+        Secretaría: Lunes a viernes, 9:00 — 14:30
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFESORADO -->
+<section class="section" id="profesorado">
+  <div class="section-header fade-up">
+    <div class="section-label">Claustro</div>
+    <h2 class="section-title">Profesorado</h2>
+    <p class="section-desc">Más de 40 profesionales organizados en 16 departamentos</p>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">📖</div>
+      <h4>Lengua Castellana y Literatura</h4>
+      <span class="dept-count">5</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">CR</div><div><div class="prof-name">M.ª del Carmen Rivilla Sauces</div><div class="prof-role">Directora del centro</div></div></div>
+      <div class="prof-row"><div class="prof-initials">CJ</div><div><div class="prof-name">Caridad Jiménez Reyes</div><div class="prof-role">Coord. Bibliotecas Escolares</div></div></div>
+      <div class="prof-row"><div class="prof-initials">RG</div><div><div class="prof-name">Rosa García Jemes</div><div class="prof-role">Secretaria del centro</div></div></div>
+      <div class="prof-row"><div class="prof-initials">ML</div><div><div class="prof-name">María López Bayo</div></div></div>
+      <div class="prof-row"><div class="prof-initials">CA</div><div><div class="prof-name">Concepción Albalat Jiménez</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🔢</div>
+      <h4>Matemáticas</h4>
+      <span class="dept-count">5</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">DP</div><div><div class="prof-name">M.ª Dolores Partera Salazar</div></div></div>
+      <div class="prof-row"><div class="prof-initials">ES</div><div><div class="prof-name">Elisabeth Serrano Hidalgo</div></div></div>
+      <div class="prof-row"><div class="prof-initials">DG</div><div><div class="prof-name">M.ª Dolores Graciano Arroyo</div><div class="prof-role">Coord. Red Espacio de Paz</div></div></div>
+      <div class="prof-row"><div class="prof-initials">FS</div><div><div class="prof-name">Francisco Eloy Sánchez Petidier</div></div></div>
+      <div class="prof-row"><div class="prof-initials">CG</div><div><div class="prof-name">M.ª del Carmen Gallego Espejo</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🇬🇧</div>
+      <h4>Inglés</h4>
+      <span class="dept-count">3</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">FF</div><div><div class="prof-name">Francisco Javier Fernández López</div></div></div>
+      <div class="prof-row"><div class="prof-initials">RM</div><div><div class="prof-name">Rosa Merichal Moreno</div></div></div>
+      <div class="prof-row"><div class="prof-initials">TS</div><div><div class="prof-name">María Teresa Salazar Yuste</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🌍</div>
+      <h4>Geografía e Historia</h4>
+      <span class="dept-count">3</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">RA</div><div><div class="prof-name">Rosa Ana Aguado Fernández</div></div></div>
+      <div class="prof-row"><div class="prof-initials">JM</div><div><div class="prof-name">José Antonio Mata Pino</div></div></div>
+      <div class="prof-row"><div class="prof-initials">AP</div><div><div class="prof-name">Asunción Pérez López</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">⚗️</div>
+      <h4>Física y Química</h4>
+      <span class="dept-count">2</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">CG</div><div><div class="prof-name">M.ª del Carmen García Jiménez</div></div></div>
+      <div class="prof-row"><div class="prof-initials">LM</div><div><div class="prof-name">María Luisa Méndez Mendosa</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">⚽</div>
+      <h4>Educación Física</h4>
+      <span class="dept-count">2</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">AF</div><div><div class="prof-name">Antonio Flores Saldaña</div><div class="prof-role">Jefe de Estudios</div></div></div>
+      <div class="prof-row"><div class="prof-initials">PS</div><div><div class="prof-name">Patricia Sánchez Carmona</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🧭</div>
+      <h4>Orientación</h4>
+      <span class="dept-count">8</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">AM</div><div><div class="prof-name">Aroa Meana López</div><div class="prof-role">Coordinadora · Bienestar Emocional</div></div></div>
+      <div class="prof-row"><div class="prof-initials">MC</div><div><div class="prof-name">María José Cañero Pacheco</div><div class="prof-role">Pedagogía Terapéutica</div></div></div>
+      <div class="prof-row"><div class="prof-initials">VO</div><div><div class="prof-name">Verónica Osuna Pérez</div><div class="prof-role">Pedagogía Terapéutica</div></div></div>
+      <div class="prof-row"><div class="prof-initials">VN</div><div><div class="prof-name">Vanessa Naranjo Ancio</div><div class="prof-role">Pedagogía Terapéutica</div></div></div>
+      <div class="prof-row"><div class="prof-initials">JD</div><div><div class="prof-name">José Domínguez Villén</div><div class="prof-role">Apoyo curricular</div></div></div>
+      <div class="prof-row"><div class="prof-initials">JB</div><div><div class="prof-name">José Ignacio Báez Ramos</div><div class="prof-role">Apoyo curricular</div></div></div>
+      <div class="prof-row"><div class="prof-initials">EC</div><div><div class="prof-name">Eduardo Casas Aranda</div><div class="prof-role">Apoyo curricular</div></div></div>
+      <div class="prof-row"><div class="prof-initials">IC</div><div><div class="prof-name">María Isabel Criado Mayer</div><div class="prof-role">Apoyo científico-técnico</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">💭</div>
+      <h4>Filosofía</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">DL</div><div><div class="prof-name">María Dolores López García</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🇫🇷</div>
+      <h4>Francés</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">DM</div><div><div class="prof-name">María Dolores Marín López</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">💻</div>
+      <h4>Tecnología e Informática</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">CA</div><div><div class="prof-name">Cecilia Arroyo García</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🎨</div>
+      <h4>Educación Plástica y Visual</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">IT</div><div><div class="prof-name">Inmaculada Toledano Moreno</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🎵</div>
+      <h4>Música</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">JI</div><div><div class="prof-name">Jorge Illanes Leiva</div><div class="prof-role">Director de producciones teatrales</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">✝️</div>
+      <h4>Religión</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">MB</div><div><div class="prof-name">María Jesús Báez Ramos</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">📊</div>
+      <h4>Economía</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">MG</div><div><div class="prof-name">Mónica Gálvez</div><div class="prof-role">Coord. Plan de Igualdad</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🧬</div>
+      <h4>Biología y Geología</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">DG</div><div><div class="prof-name">M.ª Dolores García</div><div class="prof-role">Coord. Proyecto Aldea</div></div></div>
+    </div>
+  </div>
+
+  <div class="dept-accordion fade-up">
+    <div class="dept-header" onclick="toggleDept(this)" role="button" aria-expanded="false">
+      <div class="dept-icon" aria-hidden="true">🤝</div>
+      <h4>Transformación Social</h4>
+      <span class="dept-count">1</span>
+      <span class="dept-arrow" aria-hidden="true">▼</span>
+    </div>
+    <div class="dept-list">
+      <div class="prof-row"><div class="prof-initials">AC</div><div><div class="prof-name">Antonio Cuesta Moreno</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- OFERTA EDUCATIVA -->
+<section class="section" id="oferta" style="padding-top:0">
+  <div class="section-header fade-up">
+    <div class="section-label">Formación</div>
+    <h2 class="section-title">Oferta educativa</h2>
+    <p class="section-desc">Tres etapas adaptadas a cada momento de tu formación académica</p>
+  </div>
+  <div class="oferta-grid stagger">
+    <div class="oferta-card fade-up">
+      <div class="oferta-top eso"><h3>ESO</h3><p>Educación Secundaria Obligatoria</p></div>
+      <div class="oferta-body">
+        <ul>
+          <li>De 1.º a 4.º de ESO</li>
+          <li>Formación integral y competencial</li>
+          <li>Atención a la diversidad</li>
+          <li>Orientación académica y profesional</li>
+          <li>Actividades complementarias</li>
+        </ul>
+      </div>
+    </div>
+    <div class="oferta-card fade-up">
+      <div class="oferta-top bach"><h3>Bachillerato</h3><p>Preparación para la universidad</p></div>
+      <div class="oferta-body">
+        <ul>
+          <li>Ciencias y Tecnología</li>
+          <li>Humanidades y CC.SS.</li>
+          <li>Preparación para Selectividad</li>
+          <li>Tutoría personalizada</li>
+        </ul>
+        <div class="oferta-sub">
+          <h5>Ciencias y Tecnología</h5>
+          <div class="oferta-tags">
+            <span class="oferta-tag">Itinerario Salud</span>
+            <span class="oferta-tag">Itinerario Tecnología</span>
+            <span class="oferta-tag">Matemáticas II</span>
+            <span class="oferta-tag">Biología</span>
+            <span class="oferta-tag">Física</span>
+            <span class="oferta-tag">Química</span>
+            <span class="oferta-tag">Dibujo Técnico</span>
+          </div>
+        </div>
+        <div class="oferta-sub">
+          <h5>Humanidades y CC.SS.</h5>
+          <div class="oferta-tags">
+            <span class="oferta-tag">Itinerario Sociales</span>
+            <span class="oferta-tag">Itinerario Humanidades</span>
+            <span class="oferta-tag">Mat. Aplicadas</span>
+            <span class="oferta-tag">Latín II</span>
+            <span class="oferta-tag">Empresa</span>
+            <span class="oferta-tag">Geografía</span>
+            <span class="oferta-tag">H.ª del Arte</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="oferta-card fade-up">
+      <div class="oferta-top fpb"><h3>FPB Electricidad</h3><p>Formación Profesional Básica</p></div>
+      <div class="oferta-body">
+        <ul>
+          <li>Instalaciones eléctricas de baja tensión</li>
+          <li>Montaje de dispositivos electrónicos</li>
+          <li>Normas de seguridad eléctrica</li>
+          <li>Prácticas en empresas</li>
+          <li>Acceso a Grado Medio</li>
+        </ul>
+        <div class="oferta-sub">
+          <h5>Módulos principales</h5>
+          <div class="oferta-tags">
+            <span class="oferta-tag">Instalaciones</span>
+            <span class="oferta-tag">Interpretación de planos</span>
+            <span class="oferta-tag">PRL</span>
+            <span class="oferta-tag">Comunicación</span>
+            <span class="oferta-tag">Ciencias aplicadas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACTIVIDADES -->
+<section class="section" id="actividades" style="padding-top:0">
+  <div class="section-header fade-up">
+    <div class="section-label">Experiencias</div>
+    <h2 class="section-title">Actividades</h2>
+    <p class="section-desc">Excursiones, proyectos y eventos que enriquecen la formación</p>
+  </div>
+  <div class="act-grid stagger">
+    <div class="act-card fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/WhatsApp-Image-2025-10-28-at-19.30.39.jpeg" alt="Visita al Parlamento de Andalucía" class="act-card-img" loading="lazy" />
+      <div class="act-card-body">
+        <h4>Visita a Sevilla — Parlamento de Andalucía</h4>
+        <p>4.º de ESO visitó el Parlamento Andaluz, la Catedral y el Arco de la Macarena. Profesores acompañantes: M.ª Dolores López (Filosofía) y Rosa Ana Aguado (Geo. e Historia).</p>
+        <div class="act-tags"><span class="act-tag">4.º ESO</span><span class="act-tag">Parlamento Andaluz</span><span class="act-tag">Sevilla</span></div>
+      </div>
+    </div>
+    <div class="act-card fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5742-scaled.jpeg" alt="Exposición Día de la Empresa Andaluza" class="act-card-img" loading="lazy" />
+      <div class="act-card-body">
+        <h4>Día de la Empresa Andaluza</h4>
+        <p>Exposición de carteles sobre empresas andaluzas en el hall del centro. Actividad coordinada por Mónica Gálvez (Economía).</p>
+        <div class="act-tags"><span class="act-tag">28 de octubre</span><span class="act-tag">Economía</span><span class="act-tag">Emprendimiento</span></div>
+      </div>
+    </div>
+    <div class="act-card fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-10-at-10.46.49-1.jpeg" alt="25N - Lazos por la Igualdad" class="act-card-img" loading="lazy" />
+      <div class="act-card-body">
+        <h4>25N — Contra la Violencia de Género</h4>
+        <p>Árbol simbólico con lazos morados y paneles expositivos. Los estudiantes escribieron frases de apoyo, respeto y empatía.</p>
+        <div class="act-tags"><span class="act-tag">25 de noviembre</span><span class="act-tag">Lazos morados</span><span class="act-tag">Igualdad</span></div>
+      </div>
+    </div>
+    <div class="act-card fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-05-at-15.11.54.jpeg" alt="Día del Flamenco" class="act-card-img" loading="lazy" />
+      <div class="act-card-body">
+        <h4>Día del Flamenco</h4>
+        <p>Alumnos creando paneles interactivos con figuras flamencas cercanas a Santaella. Inspirado en la obra "Carnación" de Rocío Molina.</p>
+        <div class="act-tags"><span class="act-tag">Cultura del Flamenco</span><span class="act-tag">Rocío Molina</span></div>
+      </div>
+    </div>
+    <div class="act-card fade-up">
+      <div class="act-card-body">
+        <h4>Proyecto Aldea — Medio Ambiente</h4>
+        <p>Educación ambiental con huerto escolar, reciclaje y talleres de sostenibilidad. Coordinado por M.ª Dolores García (Biología).</p>
+        <div class="act-tags"><span class="act-tag">Huerto escolar</span><span class="act-tag">Reciclaje</span><span class="act-tag">Sostenibilidad</span></div>
+      </div>
+    </div>
+    <div class="act-card fade-up">
+      <div class="act-card-body">
+        <h4>Intercambio en Inglaterra</h4>
+        <p>Cuatro días en un instituto británico, conviviendo con familias de acogida y sumergidos en la cultura inglesa.</p>
+        <div class="act-tags"><span class="act-tag">4 días</span><span class="act-tag">Inmersión lingüística</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCCIONES TEATRALES -->
+<section class="section" id="teatro" style="padding-top:0">
+  <div class="section-header fade-up">
+    <div class="section-label">Dpto. Música</div>
+    <h2 class="section-title">Producciones teatrales</h2>
+    <p class="section-desc">Tradición única del centro dirigida por Jorge Illanes Leiva</p>
+  </div>
+  <div class="teatro-timeline">
+    <div class="teatro-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-24-25.-Chicago-1.png" alt="Chicago" class="teatro-img" loading="lazy" />
+      <div class="teatro-body"><span class="teatro-year">2024-25</span><h4>Chicago</h4><p>Última producción del departamento de Música</p></div>
+    </div>
+    <div class="teatro-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-23-24.-Rocketman.-2.jpg" alt="Rocketman" class="teatro-img" loading="lazy" />
+      <div class="teatro-body"><span class="teatro-year">2023-24</span><h4>Rocketman</h4><p>Homenaje musical a Elton John</p></div>
+    </div>
+    <div class="teatro-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-22-23.-Desmontando-a-Shakespeare-2-scaled.jpg" alt="Desmontando a Shakespeare" class="teatro-img" loading="lazy" />
+      <div class="teatro-body"><span class="teatro-year">2022-23</span><h4>Desmontando a Shakespeare</h4><p>Reinterpretación creativa de los clásicos</p></div>
+    </div>
+    <div class="teatro-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-18-19.-Hairspray-1-scaled.jpg" alt="Hairspray" class="teatro-img" loading="lazy" />
+      <div class="teatro-body"><span class="teatro-year">2018-19</span><h4>Hairspray</h4><p>Musical lleno de energía y color</p></div>
+    </div>
+    <div class="teatro-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-17-18.-Una-serie-de-catastroficas-desdichas.-1-scaled.jpg" alt="Una serie de catastroficas desdichas" class="teatro-img" loading="lazy" />
+      <div class="teatro-body"><span class="teatro-year">2017-18</span><h4>Una serie de catastróficas desdichas</h4><p>Adaptación teatral de la famosa saga</p></div>
+    </div>
+    <div class="teatro-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-16-17.-El-jorobado-de-Notre-Dame.-2.jpg" alt="El jorobado de Notre Dame" class="teatro-img" loading="lazy" />
+      <div class="teatro-body"><span class="teatro-year">2016-17</span><h4>El jorobado de Notre Dame</h4><p>Clásico musical con gran puesta en escena</p></div>
+    </div>
+    <div class="teatro-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-15-16.-Into-the-woods-1.jpg" alt="Into the Woods" class="teatro-img" loading="lazy" />
+      <div class="teatro-body"><span class="teatro-year">2015-16</span><h4>Into the Woods</h4><p>Musical de Stephen Sondheim</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALACIONES -->
+<section class="section" id="galeria" style="padding-top:0">
+  <div class="section-header fade-up">
+    <div class="section-label">Espacios</div>
+    <h2 class="section-title">Instalaciones</h2>
+    <p class="section-desc">Nuestros espacios educativos y deportivos</p>
+  </div>
+  <div class="gallery-grid stagger">
+    <div class="gallery-item wide fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5740-2-scaled.jpeg" alt="Hall interior del centro" loading="lazy" />
+      <div class="gallery-item-label"><span>Hall del centro</span><small>Vestíbulo principal con exposiciones</small></div>
+    </div>
+    <div class="gallery-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Entrada con escaleras" loading="lazy" />
+      <div class="gallery-item-label"><span>Entrada principal</span><small>Escaleras de acceso</small></div>
+    </div>
+    <div class="gallery-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5598-scaled.jpeg" alt="Biblioteca del centro" loading="lazy" />
+      <div class="gallery-item-label"><span>Biblioteca</span><small>Sala de lectura y estudio</small></div>
+    </div>
+    <div class="gallery-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5596-scaled.jpeg" alt="Rampa accesible al edificio" loading="lazy" />
+      <div class="gallery-item-label"><span>Acceso lateral</span><small>Rampa accesible al edificio</small></div>
+    </div>
+    <div class="gallery-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines del centro" loading="lazy" />
+      <div class="gallery-item-label"><span>Jardines</span><small>Cipreses y zonas verdes</small></div>
+    </div>
+    <div class="gallery-item fade-up">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/d96c1ae1-d928-44cb-afd9-d2c1d20a196e.jpeg" alt="Patio con rosales" loading="lazy" />
+      <div class="gallery-item-label"><span>Patio</span><small>Zona ajardinada con rosales</small></div>
+    </div>
+  </div>
+  <div class="inst-list stagger" style="margin-top:20px">
+    <div class="inst-item fade-up"><div class="inst-icon">📚</div><div><div class="inst-name">Biblioteca</div><div class="inst-desc">Sala de lectura, consulta y estudio con recursos digitales</div></div></div>
+    <div class="inst-item fade-up"><div class="inst-icon">🔬</div><div><div class="inst-name">Laboratorio</div><div class="inst-desc">Prácticas de Física, Química y Biología</div></div></div>
+    <div class="inst-item fade-up"><div class="inst-icon">💻</div><div><div class="inst-name">Aula TIC</div><div class="inst-desc">Sala de informática con ordenadores</div></div></div>
+    <div class="inst-item fade-up"><div class="inst-icon">🎨</div><div><div class="inst-name">Aula de Dibujo</div><div class="inst-desc">Expresión artística y dibujo técnico</div></div></div>
+    <div class="inst-item fade-up"><div class="inst-icon">🔧</div><div><div class="inst-name">Aula de Tecnología</div><div class="inst-desc">Taller para proyectos y prácticas de FPB</div></div></div>
+    <div class="inst-item fade-up"><div class="inst-icon">🎵</div><div><div class="inst-name">Aula de Música</div><div class="inst-desc">Ensayos y producciones teatrales</div></div></div>
+    <div class="inst-item fade-up"><div class="inst-icon">🏀</div><div><div class="inst-name">Pistas deportivas</div><div class="inst-desc">Baloncesto, fútbol sala y espacio cubierto</div></div></div>
+    <div class="inst-item fade-up"><div class="inst-icon">🏢</div><div><div class="inst-name">Secretaría</div><div class="inst-desc">Gestión administrativa y matriculación</div></div></div>
+  </div>
+</section>
+
+<!-- PLANES Y PROGRAMAS -->
+<section class="section" id="planes" style="padding-top:0">
+  <div class="section-header fade-up">
+    <div class="section-label">Proyectos</div>
+    <h2 class="section-title">Planes y programas</h2>
+    <p class="section-desc">Iniciativas activas para enriquecer la experiencia educativa</p>
+  </div>
+  <div class="plan-grid stagger">
+    <div class="plan-card fade-up">
+      <h4>Participación y oficio</h4>
+      <div class="plan-items">
+        <span class="plan-item">Bibliotecas Escolares</span>
+        <span class="plan-item">Bienestar Emocional</span>
+        <span class="plan-item">Plan de Igualdad</span>
+        <span class="plan-item">TDE</span>
+        <span class="plan-item">Prevención de Riesgos</span>
+        <span class="plan-item">Compensación Educativa</span>
+      </div>
+      <div class="plan-coord">Coordinadores: Caridad Jiménez · Aroa Meana · Mónica Gálvez</div>
+    </div>
+    <div class="plan-card fade-up">
+      <h4>Convocatoria general</h4>
+      <div class="plan-items">
+        <span class="plan-item">Red Espacio de Paz</span>
+        <span class="plan-item">Proyecto Aldea</span>
+        <span class="plan-item">Hábitos vida saludable</span>
+        <span class="plan-item">Prácticum Grado Maestro</span>
+        <span class="plan-item">Prácticum Secundaria</span>
+      </div>
+      <div class="plan-coord">Coordinadores: M.ª Dolores Graciano · M.ª Dolores García · Aroa Meana</div>
+    </div>
+    <div class="plan-card fade-up">
+      <h4>Convocatoria específica</h4>
+      <div class="plan-items">
+        <span class="plan-item">Programa Atención ZTS</span>
+        <span class="plan-item">Más Equidad 2025</span>
+        <span class="plan-item">Aulas Verdes Abiertas 2025</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SELECTIVIDAD -->
+<section class="section" id="selectividad" style="padding-top:0">
+  <div class="section-header fade-up">
+    <div class="section-label">Acceso universidad</div>
+    <h2 class="section-title">Selectividad</h2>
+    <p class="section-desc">Estructura de las pruebas de acceso</p>
+  </div>
+  <div class="select-card fade-up">
+    <div class="select-phase">
+      <h4>Fase obligatoria</h4>
+      <div class="select-tags">
+        <span class="select-tag">Lengua Castellana y Literatura II</span>
+        <span class="select-tag">Inglés</span>
+        <span class="select-tag">Francés</span>
+        <span class="select-tag">Matemáticas II</span>
+        <span class="select-tag">Mat. Aplicadas CC.SS. II</span>
+        <span class="select-tag">Latín II</span>
+      </div>
+    </div>
+    <div class="select-phase">
+      <h4>Fase voluntaria — Ciencias</h4>
+      <div class="select-tags">
+        <span class="select-tag">Biología</span>
+        <span class="select-tag">Física</span>
+        <span class="select-tag">Química</span>
+        <span class="select-tag">Dibujo Técnico</span>
+      </div>
+    </div>
+    <div class="select-phase">
+      <h4>Fase voluntaria — Humanidades y CC.SS.</h4>
+      <div class="select-tags">
+        <span class="select-tag">Empresa y Modelos de Negocio</span>
+        <span class="select-tag">Geografía</span>
+        <span class="select-tag">Griego II</span>
+        <span class="select-tag">Historia del Arte</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENLACES ÚTILES -->
+<section class="section-dark" id="enlaces">
+  <div class="section-dark-inner">
+    <div class="section-header fade-up">
+      <div class="section-label">Recursos</div>
+      <h2 class="section-title">Enlaces útiles</h2>
+      <p class="section-desc">Plataformas y recursos para alumnado y familias</p>
+    </div>
+    <div class="link-grid stagger">
+      <a href="https://educacionadistancia.juntadeandalucia.es/centros/login/index.php" target="_blank" rel="noopener noreferrer" class="link-card fade-up">
+        <div class="link-icon" aria-hidden="true">📖</div>
+        <div><div class="link-name">Moodle Centros</div><div class="link-desc">Aula virtual con contenidos y actividades</div></div>
+      </a>
+      <a href="https://seneca.juntadeandalucia.es/seneca/jsp/portalpasen/" target="_blank" rel="noopener noreferrer" class="link-card fade-up">
+        <div class="link-icon" aria-hidden="true">👥</div>
+        <div><div class="link-name">iPasen</div><div class="link-desc">Notas, faltas y comunicaciones</div></div>
+      </a>
+      <a href="https://www.juntadeandalucia.es/educacion/secretariavirtual/" target="_blank" rel="noopener noreferrer" class="link-card fade-up">
+        <div class="link-icon" aria-hidden="true">🏛️</div>
+        <div><div class="link-name">Secretaría Virtual</div><div class="link-desc">Trámites, matriculación y becas</div></div>
+      </a>
+      <a href="https://www.todofp.es/" target="_blank" rel="noopener noreferrer" class="link-card fade-up">
+        <div class="link-icon" aria-hidden="true">⚡</div>
+        <div><div class="link-name">TodoFP</div><div class="link-desc">Información sobre ciclos formativos</div></div>
+      </a>
+      <a href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/" target="_blank" rel="noopener noreferrer" class="link-card fade-up">
+        <div class="link-icon" aria-hidden="true">🌐</div>
+        <div><div class="link-name">Blog del centro</div><div class="link-desc">Noticias, actividades y novedades</div></div>
+      </a>
+      <a href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/CALENDARIO-ESCOLAR-2025-2026.pdf" target="_blank" rel="noopener noreferrer" class="link-card fade-up">
+        <div class="link-icon" aria-hidden="true">📅</div>
+        <div><div class="link-name">Calendario escolar</div><div class="link-desc">Calendario oficial del centro</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="section-dark" id="contacto" style="padding-top:0">
+  <div class="section-dark-inner">
+    <div class="section-header fade-up">
+      <div class="section-label">Contacto</div>
+      <h2 class="section-title">Contacta con nosotros</h2>
+      <p class="section-desc">Estamos aquí para ayudarte</p>
+    </div>
+    <div class="contact-grid stagger">
+      <a href="tel:957313455" class="contact-card fade-up">
+        <div class="contact-icon" aria-hidden="true">📞</div>
+        <div><div class="contact-name">Teléfono</div><div class="contact-val">957 31 34 55</div></div>
+      </a>
+      <a href="/cdn-cgi/l/email-protection#dfeeebe8efefebebe8f1babbaa9fb5aab1abbebbbabeb1bbbeb3aabcb6bef1baac" class="contact-card fade-up">
+        <div class="contact-icon" aria-hidden="true">📧</div>
+        <div><div class="contact-name">Email</div><div class="contact-val"><span class="__cf_email__" data-cfemail="bb8a8f8c8b8b8f8f8c95dedfcefbd1ced5cfdadfdedad5dfdad7ced8d2da95dec8">[email&#160;protected]</span></div></div>
+      </a>
+      <a href="https://maps.app.goo.gl/noWkj3ZnHzkqj7GP7" target="_blank" rel="noopener noreferrer" class="contact-card fade-up">
+        <div class="contact-icon" aria-hidden="true">📍</div>
+        <div><div class="contact-name">Dirección</div><div class="contact-val">C. Villargallegos, s/n — 14546 Santaella</div></div>
+      </a>
+      <div class="contact-card fade-up">
+        <div class="contact-icon" aria-hidden="true">🕐</div>
+        <div><div class="contact-name">Horario secretaría</div><div class="contact-val">L-V: 9:00 — 14:30</div></div>
+      </div>
+    </div>
+    <div class="social-row fade-up">
+      <a href="https://www.facebook.com/share/16PewAHpj8/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Facebook del centro">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/ies_arcelacis?igsh=a3dxN2h5cTRmeDc=" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram del centro">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><defs><linearGradient id="ig" x1="0" y1="24" x2="24" y2="0"><stop offset="0%" stop-color="#feda75"/><stop offset="25%" stop-color="#fa7e1e"/><stop offset="50%" stop-color="#d62976"/><stop offset="75%" stop-color="#962fbf"/><stop offset="100%" stop-color="#4f5bd5"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5" stroke="url(#ig)" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="url(#ig)" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="url(#ig)"/></svg>
+      </a>
+      <a href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Web del centro">🌐</a>
+    </div>
+    <div class="map-wrap fade-up">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1598!2d-4.844455!3d37.556553!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6d388e8491f171%3A0xaaf42b2e07151998!2sInstituto%20de%20Educaci%C3%B3n%20Secundaria%20Arcelacis!5e0!3m2!1ses!2ses!4v1"
+        allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="Ubicación IES Arcelacis" aria-label="Mapa de ubicación del IES Arcelacis"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- EU BANNER -->
+<div class="eu-banner">
+  <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/wp-content/themes/pencil/images/andalucia-ue-color.png"
+       alt="Consejería de Desarrollo Educativo — Unión Europea" height="36" loading="lazy" />
+</div>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+  <div class="footer-logo">
+    <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png"
+         alt="IES Arcelacis" width="34" height="34" loading="lazy" />
+  </div>
+  <p><strong>IES Arcelacis</strong> — Santaella, Córdoba</p>
+  <p style="margin-top:3px">C. Villargallegos, s/n · Tel. 957 31 34 55</p>
+  <p style="margin-top:8px;font-size:.65rem">Consejería de Desarrollo Educativo y Formación Profesional · Junta de Andalucía</p>
+  <p style="margin-top:5px;font-size:.6rem;opacity:.4">Desarrollado por O.N.E Agency</p>
+</footer>
+
+<!-- BOTTOM NAV -->
+<nav class="bottomnav" id="bottomNav" role="navigation" aria-label="Navegación principal">
+  <a href="#inicio" class="bottomnav-item active" data-section="inicio">
+    <span class="bottomnav-icon" aria-hidden="true">🏠</span>Inicio
+  </a>
+  <a href="#profesorado" class="bottomnav-item" data-section="profesorado">
+    <span class="bottomnav-icon" aria-hidden="true">👥</span>Profes
+  </a>
+  <a href="#actividades" class="bottomnav-item" data-section="actividades">
+    <span class="bottomnav-icon" aria-hidden="true">📋</span>Actividades
+  </a>
+  <a href="#galeria" class="bottomnav-item" data-section="galeria">
+    <span class="bottomnav-icon" aria-hidden="true">📷</span>Galería
+  </a>
+  <a href="#contacto" class="bottomnav-item" data-section="contacto">
+    <span class="bottomnav-icon" aria-hidden="true">📞</span>Contacto
+  </a>
+</nav>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+
+<!-- BOTTOM NAV -->
+<nav class="bottomnav" id="bottomNav" role="navigation" aria-label="Navegación principal">
+  <a href="#inicio" class="bottomnav-item active" data-section="inicio">
+    <span class="bottomnav-icon" aria-hidden="true">🏠</span>Inicio
+  </a>
+  <a href="#profesorado" class="bottomnav-item" data-section="profesorado">
+    <span class="bottomnav-icon" aria-hidden="true">👥</span>Profes
+  </a>
+  <a href="#actividades" class="bottomnav-item" data-section="actividades">
+    <span class="bottomnav-icon" aria-hidden="true">📋</span>Actividades
+  </a>
+  <a href="#galeria" class="bottomnav-item" data-section="galeria">
+    <span class="bottomnav-icon" aria-hidden="true">📷</span>Galería
+  </a>
+  <a href="#contacto" class="bottomnav-item" data-section="contacto">
+    <span class="bottomnav-icon" aria-hidden="true">📞</span>Contacto
+  </a>
+</nav>
+
+<!-- App JS: deferred — does not block parsing -->
+<script src="app.js" defer></script>
+
+</body>
+</html>
