@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://oneagencywebsia-cloud.github.io/IES-ARCELACIS/sitemap.xml

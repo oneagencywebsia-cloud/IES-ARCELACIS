@@ -1,79 +1,97 @@
-/**
- * IES Arcelacis — service-worker.js
- * Strategy: Stale-While-Revalidate (SWR)
- * - Serves cached assets instantly for perceived performance
- * - Background-fetches fresh versions without blocking paint
- * - Offline fallback for core shell
- */
+/* ============================================================
+   IES Arcelacis — Service Worker
+   Strategy:
+   - App shell (HTML/manifest): network-first, fallback cache
+   - Fonts + external images: stale-while-revalidate
+   - Navigation offline fallback: cached index.html
+============================================================ */
+const VERSION = 'iesa-v1.0.0';
+const SHELL_CACHE = `shell-${VERSION}`;
+const RUNTIME_CACHE = `runtime-${VERSION}`;
 
-const CACHE_NAME = 'ies-arcelacis-v2';
-const OFFLINE_URL = '/offline.html';
-
-// Assets to precache on install (app shell)
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap',
+const SHELL_ASSETS = [
+  './',
+  './index.html',
+  './manifest.json'
 ];
 
-/* ── Install: precache shell ── */
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE_ASSETS))
+    caches.open(SHELL_CACHE)
+      .then((cache) => cache.addAll(SHELL_ASSETS))
       .then(() => self.skipWaiting())
   );
 });
 
-/* ── Activate: prune old caches ── */
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
+    caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter(k => k !== CACHE_NAME)
-          .map(k => caches.delete(k))
+          .filter((k) => k !== SHELL_CACHE && k !== RUNTIME_CACHE)
+          .map((k) => caches.delete(k))
       )
     ).then(() => self.clients.claim())
   );
 });
 
-/* ── Fetch: Stale-While-Revalidate ── */
-self.addEventListener('fetch', event => {
-  const { request } = event;
+function networkFirst(request, cacheName) {
+  return fetch(request)
+    .then((response) => {
+      if (response && response.status === 200 && response.type !== 'opaque') {
+        const copy = response.clone();
+        caches.open(cacheName).then((cache) => cache.put(request, copy));
+      }
+      return response;
+    })
+    .catch(() => caches.match(request).then((r) => r || caches.match('./index.html')));
+}
 
-  // Only handle GET requests
-  if (request.method !== 'GET') return;
-
-  // Skip cross-origin requests that aren't fonts/images
-  const url = new URL(request.url);
-  const isSameOrigin = url.origin === self.location.origin;
-  const isCDN = url.hostname.includes('googleapis.com')
-             || url.hostname.includes('gstatic.com')
-             || url.hostname.includes('juntadeandalucia.es');
-
-  if (!isSameOrigin && !isCDN) return;
-
-  event.respondWith(
-    caches.open(CACHE_NAME).then(cache =>
-      cache.match(request).then(cached => {
-        // Kick off network fetch in background (revalidate)
-        const networkFetch = fetch(request)
-          .then(response => {
-            // Cache valid responses
-            if (response && response.status === 200 && response.type !== 'opaque') {
-              cache.put(request, response.clone());
-            }
-            return response;
-          })
-          .catch(() => cached || caches.match(OFFLINE_URL));
-
-        // Return cached immediately (stale), network updates cache
-        return cached || networkFetch;
-      })
-    )
+function staleWhileRevalidate(request, cacheName) {
+  return caches.open(cacheName).then((cache) =>
+    cache.match(request).then((cached) => {
+      const fetchPromise = fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            cache.put(request, response.clone());
+          }
+          return response;
+        })
+        .catch(() => cached);
+      return cached || fetchPromise;
+    })
   );
+}
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
+
+  const url = new URL(req.url);
+
+  // Navigation requests → network-first with offline fallback
+  if (req.mode === 'navigate') {
+    event.respondWith(networkFirst(req, SHELL_CACHE));
+    return;
+  }
+
+  // Same-origin static assets → network-first
+  if (url.origin === self.location.origin) {
+    event.respondWith(networkFirst(req, SHELL_CACHE));
+    return;
+  }
+
+  // Google Fonts + external images → stale-while-revalidate
+  if (
+    url.hostname === 'fonts.googleapis.com' ||
+    url.hostname === 'fonts.gstatic.com' ||
+    url.hostname === 'blogsaverroes.juntadeandalucia.es'
+  ) {
+    event.respondWith(staleWhileRevalidate(req, RUNTIME_CACHE));
+    return;
+  }
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });

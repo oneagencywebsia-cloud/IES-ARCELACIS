@@ -1,53 +1,57 @@
 {
   "name": "IES Arcelacis — Santaella",
   "short_name": "IES Arcelacis",
-  "description": "App oficial del IES Arcelacis de Santaella, Córdoba. Información, departamentos, profesorado, oferta educativa y más.",
-  "start_url": "/",
+  "description": "App oficial del IES Arcelacis de Santaella, Córdoba. Información, departamentos, profesorado, oferta educativa (ESO, Bachillerato, FP Básica), actividades, galería y contacto.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "/IES-ARCELACIS/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
+  "orientation": "portrait",
   "lang": "es",
   "dir": "ltr",
-  "scope": "/",
-  "categories": ["education"],
+  "categories": ["education", "reference"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
+      "purpose": "any"
+    },
     {
-      "src": "https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg",
-      "sizes": "1280x720",
-      "type": "image/jpeg",
-      "form_factor": "wide",
-      "label": "IES Arcelacis — Vista principal"
+      "src": "https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
-      "name": "Profesorado",
-      "short_name": "Profes",
-      "url": "/#profesorado",
-      "description": "Ver el claustro de profesores"
-    },
-    {
       "name": "Contacto",
       "short_name": "Contacto",
-      "url": "/#contacto",
-      "description": "Contactar con el centro"
+      "description": "Contactar con el centro",
+      "url": "./index.html#contacto"
+    },
+    {
+      "name": "Oferta educativa",
+      "short_name": "Oferta",
+      "description": "Ver la oferta educativa",
+      "url": "./index.html#oferta"
+    },
+    {
+      "name": "Profesorado",
+      "short_name": "Profes",
+      "description": "Ver el profesorado",
+      "url": "./index.html#profesorado"
     }
-  ],
-  "related_applications": [],
-  "prefer_related_applications": false
+  ]
 }
