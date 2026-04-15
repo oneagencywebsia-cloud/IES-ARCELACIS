@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Instala la app oficial del IES Arcelacis en tu móvil en segundos. Instrucciones para Android e iPhone.">
+<meta name="robots" content="index,follow">
+<title>Instalar la app del IES Arcelacis</title>
+<link rel="icon" type="image/png" href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png">
+<link rel="canonical" href="https://oneagencywebsia-cloud.github.io/IES-ARCELACIS/instalar.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --s900:#0f172a;--s800:#1e293b;--s700:#334155;--s500:#64748b;
+  --s200:#e2e8f0;--s100:#f1f5f9;--s50:#f8fafc;--w:#fff;
+  --b600:#2563eb;--b500:#3b82f6;--b50:#eff6ff;
+  --g500:#22c55e;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%);
+  color:var(--s700);line-height:1.6;min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:720px;margin:0 auto;padding:40px 20px 80px}
+
+.hero{text-align:center;color:#fff;margin-bottom:32px}
+.hero-logo{
+  width:88px;height:88px;border-radius:20px;background:#fff;padding:8px;
+  margin:0 auto 20px;box-shadow:0 20px 48px rgba(0,0,0,.35);
+  animation:pop .6s cubic-bezier(.34,1.56,.64,1);
+}
+.hero-logo img{width:100%;height:100%;object-fit:contain;border-radius:14px}
+.hero h1{font-size:1.75rem;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+.hero p{font-size:.95rem;color:#cbd5e1;max-width:460px;margin:0 auto}
+
+.qr-card{
+  background:#fff;border-radius:20px;padding:28px 24px;text-align:center;
+  box-shadow:0 20px 48px rgba(0,0,0,.25);margin-bottom:32px;
+  animation:pop .7s cubic-bezier(.34,1.56,.64,1) .1s both;
+}
+.qr-card h2{font-size:1.1rem;color:var(--s900);margin-bottom:16px;font-weight:700}
+.qr-img{
+  width:240px;height:240px;margin:0 auto 16px;
+  border-radius:12px;background:#f8fafc;padding:12px;
+  border:1px solid var(--s200);
+}
+.qr-img img{width:100%;height:100%;display:block}
+.qr-url{
+  font-size:.78rem;color:var(--s500);word-break:break-all;
+  background:var(--s50);padding:10px 14px;border-radius:10px;
+  font-family:'SF Mono',Monaco,monospace;
+}
+
+.tabs{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;
+}
+.tab-btn{
+  padding:14px;border-radius:14px;border:2px solid transparent;
+  background:#fff;color:var(--s900);font-weight:700;font-size:.95rem;
+  cursor:pointer;font-family:inherit;display:flex;align-items:center;
+  justify-content:center;gap:8px;transition:all .25s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+.tab-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.12)}
+.tab-btn.active{background:var(--b600);color:#fff;border-color:var(--b500)}
+.tab-btn svg{width:20px;height:20px}
+
+.panel{
+  background:#fff;border-radius:20px;padding:28px 24px;
+  box-shadow:0 20px 48px rgba(0,0,0,.15);
+  display:none;animation:fadeUp .4s cubic-bezier(.16,1,.3,1);
+}
+.panel.active{display:block}
+.panel h3{
+  font-size:1.2rem;color:var(--s900);margin-bottom:6px;
+  display:flex;align-items:center;gap:10px;
+}
+.panel .sub{color:var(--s500);font-size:.88rem;margin-bottom:20px}
+
+.steps{list-style:none;counter-reset:step}
+.steps li{
+  counter-increment:step;position:relative;padding:14px 14px 14px 52px;
+  background:var(--s50);border-radius:12px;margin-bottom:10px;font-size:.92rem;
+  border:1px solid var(--s100);
+}
+.steps li::before{
+  content:counter(step);
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;
+  background:var(--b600);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.82rem;
+}
+.steps strong{color:var(--s900)}
+.steps kbd{
+  background:#fff;border:1px solid var(--s200);border-radius:6px;
+  padding:2px 8px;font-family:inherit;font-size:.82rem;
+  box-shadow:0 1px 0 rgba(0,0,0,.06);font-weight:600;
+}
+
+.note{
+  background:var(--b50);border-left:3px solid var(--b500);
+  padding:12px 14px;border-radius:8px;font-size:.84rem;
+  color:var(--s700);margin-top:16px;
+}
+.note strong{color:var(--b600)}
+
+.foot{
+  text-align:center;color:#94a3b8;font-size:.8rem;margin-top:32px;
+}
+.foot a{color:#cbd5e1;text-decoration:underline}
+
+@keyframes pop{
+  from{opacity:0;transform:scale(.92)}
+  to{opacity:1;transform:scale(1)}
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+@media(max-width:480px){
+  .wrap{padding:28px 16px 60px}
+  .hero h1{font-size:1.45rem}
+  .qr-img{width:200px;height:200px}
+  .tab-btn{font-size:.88rem;padding:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-logo">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png" alt="IES Arcelacis" width="88" height="88">
+    </div>
+    <h1>Instalar la app del IES Arcelacis</h1>
+    <p>Tu instituto, en tu móvil. Rápido, sin tienda de apps, sin pagar nada. Elige tu dispositivo y sigue los pasos.</p>
+  </header>
+
+  <section class="qr-card">
+    <h2>📷 Escanea con la cámara del móvil</h2>
+    <div class="qr-img">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=0&data=https://oneagencywebsia-cloud.github.io/IES-ARCELACIS/" alt="Código QR" loading="eager">
+    </div>
+    <div class="qr-url">oneagencywebsia-cloud.github.io/IES-ARCELACIS/</div>
+  </section>
+
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="android" role="tab" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.4.4 0 00-.69-.4l-1.86 3.23a11.4 11.4 0 00-9.78 0L5.25 5.9a.4.4 0 00-.69.4L6.4 9.48A10.8 10.8 0 001 18h22a10.8 10.8 0 00-5.4-8.52zM7 15.25a1 1 0 110-2 1 1 0 010 2zm10 0a1 1 0 110-2 1 1 0 010 2z"/></svg>
+      Android
+    </button>
+    <button class="tab-btn" data-tab="ios" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.04c-.03-3.18 2.6-4.7 2.72-4.78-1.48-2.17-3.79-2.47-4.6-2.5-1.96-.2-3.82 1.15-4.81 1.15-1 0-2.53-1.12-4.16-1.1-2.13.04-4.1 1.24-5.2 3.15-2.22 3.86-.57 9.56 1.6 12.7 1.06 1.53 2.32 3.25 3.97 3.2 1.6-.07 2.2-1.03 4.13-1.03s2.48 1.03 4.17 1c1.72-.03 2.81-1.56 3.86-3.11 1.22-1.78 1.72-3.5 1.75-3.6-.04-.02-3.36-1.29-3.4-5.1zM14 3.56C14.88 2.5 15.47 1.04 15.3-.4c-1.24.05-2.75.82-3.66 1.87-.82.93-1.54 2.41-1.35 3.83 1.38.1 2.8-.7 3.71-1.74z"/></svg>
+      iPhone
+    </button>
+  </div>
+
+  <section class="panel active" id="panel-android" role="tabpanel">
+    <h3>📱 Instalar en Android</h3>
+    <p class="sub">2 formas de hacerlo. La primera es la más rápida.</p>
+
+    <ol class="steps">
+      <li>Abre <strong>Chrome</strong> en el móvil y ve a la dirección del QR.</li>
+      <li>Cuando cargue la web, Chrome mostrará abajo <strong>"Añadir IES Arcelacis a la pantalla de inicio"</strong>. Pulsa <kbd>Añadir</kbd>.</li>
+      <li>Si no aparece, pulsa el menú <strong>⋮</strong> arriba a la derecha → <kbd>Instalar app</kbd> o <kbd>Añadir a pantalla de inicio</kbd>.</li>
+      <li>Ya tienes el icono del IES en tu escritorio. Al abrirlo se ve a pantalla completa, como una app de verdad.</li>
+    </ol>
+
+    <div class="note">
+      <strong>¿Prefieres instalarla como APK?</strong> Pídele el archivo <code>IES Arcelacis.apk</code> a tu profesor, guárdalo en el móvil, ábrelo desde la app <strong>Archivos</strong> y pulsa <kbd>Instalar</kbd>. Puede que Android pida permitir "fuentes desconocidas" la primera vez.
+    </div>
+  </section>
+
+  <section class="panel" id="panel-ios" role="tabpanel">
+    <h3>🍏 Instalar en iPhone</h3>
+    <p class="sub">En iOS se instala desde Safari en 10 segundos. Tiene que ser Safari — con Chrome no funciona.</p>
+
+    <ol class="steps">
+      <li>Abre <strong>Safari</strong> (muy importante, no vale Chrome) y escanea el QR o escribe la dirección.</li>
+      <li>Cuando cargue la web, pulsa el botón <strong>Compartir</strong> (el cuadrado con la flecha hacia arriba, abajo en el centro de Safari).</li>
+      <li>Baja en el menú y pulsa <kbd>Añadir a pantalla de inicio</kbd>.</li>
+      <li>Pulsa <kbd>Añadir</kbd> arriba a la derecha. El icono del IES aparecerá junto a tus otras apps.</li>
+      <li>Al abrirlo se ve a pantalla completa, sin barra de Safari. Idéntico a una app nativa.</li>
+    </ol>
+
+    <div class="note">
+      <strong>¿Por qué no hay archivo para iPhone?</strong> Apple no permite instalar apps fuera de la App Store. Pero gracias a la tecnología PWA, el método de arriba funciona igual: icono propio, pantalla completa, funciona sin internet.
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>IES Arcelacis · Santaella, Córdoba · <a href="https://oneagencywebsia-cloud.github.io/IES-ARCELACIS/">Abrir la app</a></p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.tab-btn');
+  var panels = document.querySelectorAll('.panel');
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      var id = t.dataset.tab;
+      tabs.forEach(function(x){
+        x.classList.toggle('active', x === t);
+        x.setAttribute('aria-selected', x === t ? 'true' : 'false');
+      });
+      panels.forEach(function(p){
+        p.classList.toggle('active', p.id === 'panel-' + id);
+      });
+    });
+  });
+
+  // Auto-detect OS and activate tab
+  var ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/i.test(ua)) {
+    document.querySelector('[data-tab="ios"]').click();
+  }
+})();
+</script>
+</body>
+</html>
