@@ -1000,6 +1000,26 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
 /* FBO variant color-coded — verde (etapa obligatoria específica) */
 .oferta-top.fbo{background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%)}
 
+/* ═══════════════════════════════════════════════════════════════════
+   GPU PROMOTION · Cards & pills (60fps garantizado en mobile)
+   ═══════════════════════════════════════════════════════════════════ */
+.oferta-card,.plan-card,.select-card,.gallery-item,.act-card,.teatro-item,.link-card,.contact-card,.team-card,.gallery-card{
+  transform:translateZ(0);         /* promueve a GPU layer permanente */
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+a.oferta-tag,a.plan-item,a.select-tag{
+  transform:translate3d(0,0,0);    /* layer propio para magnetic hover */
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+}
+/* Spring premium: tension 280 / friction 20 / mass 0.8 aproximado vía cubic-bezier */
+.oferta-card,.plan-card,.select-card,.act-card,.link-card,.contact-card,.team-card{
+  transition:
+    transform 420ms cubic-bezier(.34,1.44,.64,1),
+    box-shadow 420ms cubic-bezier(.4,0,.2,1);
+}
+
 
 </style>
 </head>
@@ -1033,7 +1053,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     </div>
     <div class="hero-logo">
       <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png"
-           alt="Escudo IES Arcelacis" width="84" height="84" loading="eager" />
+           alt="Escudo IES Arcelacis" width="84" height="84" loading="eager" fetchpriority="high" decoding="async" />
     </div>
     <h1>IES Arcelacis</h1>
     <p class="hero-sub">Centro educativo público · Santaella, Córdoba</p>
@@ -1062,7 +1082,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
   </div>
   <div class="about-card fade-up">
     <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg"
-         alt="Fachada principal del IES Arcelacis con banderas" class="about-img" loading="lazy" width="800" height="220" />
+         alt="Fachada principal del IES Arcelacis con banderas" class="about-img" loading="lazy" width="800" height="220" / decoding="async">
     <div class="about-body">
       <h3>Educación con valores</h3>
       <p>Situado en la C. Villargallegos de Santaella, nuestro centro ofrece ESO, Bachillerato y FP Básica en un entorno que fomenta el aprendizaje competencial, el trabajo en equipo y el compromiso social.</p>
@@ -1460,7 +1480,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
   </div>
   <div class="act-grid stagger">
     <div class="act-card fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/WhatsApp-Image-2025-10-28-at-19.30.39.jpeg" alt="Visita al Parlamento de Andalucía" class="act-card-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/WhatsApp-Image-2025-10-28-at-19.30.39.jpeg" alt="Visita al Parlamento de Andalucía" class="act-card-img" loading="lazy" / decoding="async">
       <div class="act-card-body">
         <h4>Visita a Sevilla — Parlamento de Andalucía</h4>
         <p>4.º de ESO visitó el Parlamento Andaluz, la Catedral y el Arco de la Macarena. Profesores acompañantes: M.ª Dolores López (Filosofía) y Rosa Ana Aguado (Geo. e Historia).</p>
@@ -1468,7 +1488,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
       </div>
     </div>
     <div class="act-card fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5742-scaled.jpeg" alt="Exposición Día de la Empresa Andaluza" class="act-card-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5742-scaled.jpeg" alt="Exposición Día de la Empresa Andaluza" class="act-card-img" loading="lazy" / decoding="async">
       <div class="act-card-body">
         <h4>Día de la Empresa Andaluza</h4>
         <p>Exposición de carteles sobre empresas andaluzas en el hall del centro. Actividad coordinada por Mónica Gálvez (Economía).</p>
@@ -1476,7 +1496,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
       </div>
     </div>
     <div class="act-card fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-10-at-10.46.49-1.jpeg" alt="25N - Lazos por la Igualdad" class="act-card-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-10-at-10.46.49-1.jpeg" alt="25N - Lazos por la Igualdad" class="act-card-img" loading="lazy" / decoding="async">
       <div class="act-card-body">
         <h4>25N — Contra la Violencia de Género</h4>
         <p>Árbol simbólico con lazos morados y paneles expositivos. Los estudiantes escribieron frases de apoyo, respeto y empatía.</p>
@@ -1484,7 +1504,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
       </div>
     </div>
     <div class="act-card fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-05-at-15.11.54.jpeg" alt="Día del Flamenco" class="act-card-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-05-at-15.11.54.jpeg" alt="Día del Flamenco" class="act-card-img" loading="lazy" / decoding="async">
       <div class="act-card-body">
         <h4>Día del Flamenco</h4>
         <p>Alumnos creando paneles interactivos con figuras flamencas cercanas a Santaella. Inspirado en la obra "Carnación" de Rocío Molina.</p>
@@ -1517,31 +1537,31 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
   </div>
   <div class="teatro-timeline">
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-24-25.-Chicago-1.png" alt="Chicago" class="teatro-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-24-25.-Chicago-1.png" alt="Chicago" class="teatro-img" loading="lazy" / decoding="async">
       <div class="teatro-body"><span class="teatro-year">2024-25</span><h4>Chicago</h4><p>Última producción del departamento de Música</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-23-24.-Rocketman.-2.jpg" alt="Rocketman" class="teatro-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-23-24.-Rocketman.-2.jpg" alt="Rocketman" class="teatro-img" loading="lazy" / decoding="async">
       <div class="teatro-body"><span class="teatro-year">2023-24</span><h4>Rocketman</h4><p>Homenaje musical a Elton John</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-22-23.-Desmontando-a-Shakespeare-2-scaled.jpg" alt="Desmontando a Shakespeare" class="teatro-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-22-23.-Desmontando-a-Shakespeare-2-scaled.jpg" alt="Desmontando a Shakespeare" class="teatro-img" loading="lazy" / decoding="async">
       <div class="teatro-body"><span class="teatro-year">2022-23</span><h4>Desmontando a Shakespeare</h4><p>Reinterpretación creativa de los clásicos</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-18-19.-Hairspray-1-scaled.jpg" alt="Hairspray" class="teatro-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-18-19.-Hairspray-1-scaled.jpg" alt="Hairspray" class="teatro-img" loading="lazy" / decoding="async">
       <div class="teatro-body"><span class="teatro-year">2018-19</span><h4>Hairspray</h4><p>Musical lleno de energía y color</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-17-18.-Una-serie-de-catastroficas-desdichas.-1-scaled.jpg" alt="Una serie de catastroficas desdichas" class="teatro-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-17-18.-Una-serie-de-catastroficas-desdichas.-1-scaled.jpg" alt="Una serie de catastroficas desdichas" class="teatro-img" loading="lazy" / decoding="async">
       <div class="teatro-body"><span class="teatro-year">2017-18</span><h4>Una serie de catastróficas desdichas</h4><p>Adaptación teatral de la famosa saga</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-16-17.-El-jorobado-de-Notre-Dame.-2.jpg" alt="El jorobado de Notre Dame" class="teatro-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-16-17.-El-jorobado-de-Notre-Dame.-2.jpg" alt="El jorobado de Notre Dame" class="teatro-img" loading="lazy" / decoding="async">
       <div class="teatro-body"><span class="teatro-year">2016-17</span><h4>El jorobado de Notre Dame</h4><p>Clásico musical con gran puesta en escena</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-15-16.-Into-the-woods-1.jpg" alt="Into the Woods" class="teatro-img" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-15-16.-Into-the-woods-1.jpg" alt="Into the Woods" class="teatro-img" loading="lazy" / decoding="async">
       <div class="teatro-body"><span class="teatro-year">2015-16</span><h4>Into the Woods</h4><p>Musical de Stephen Sondheim</p></div>
     </div>
   </div>
@@ -1558,36 +1578,36 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
   <div class="gallery-grid stagger">
     <!-- Accesos y fachada -->
     <div class="gallery-item wide fade-up" data-lightbox data-caption="Fachada principal — Entrada con banderas institucionales" data-area="Exteriores">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" alt="Fachada principal del IES Arcelacis" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" alt="Fachada principal del IES Arcelacis" loading="lazy" / decoding="async">
       <div class="gallery-item-label"><span>Fachada principal</span><small>Exteriores · Acceso</small></div>
     </div>
     <div class="gallery-item fade-up" data-lightbox data-caption="Hall del centro — Vestíbulo con exposiciones del alumnado" data-area="Interiores">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5740-2-scaled.jpeg" alt="Hall interior del centro" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5740-2-scaled.jpeg" alt="Hall interior del centro" loading="lazy" / decoding="async">
       <div class="gallery-item-label"><span>Hall del centro</span><small>Interiores · Exposiciones</small></div>
     </div>
     <!-- Biblioteca — Lengua / Coordinación de Bibliotecas Escolares -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Biblioteca — "Today a Reader, Tomorrow a Leader" · Dpto. Lengua" data-area="Biblioteca">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5598-scaled.jpeg" alt="Biblioteca del centro" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5598-scaled.jpeg" alt="Biblioteca del centro" loading="lazy" / decoding="async">
       <div class="gallery-item-label"><span>Biblioteca</span><small>Dpto. Lengua Castellana</small></div>
     </div>
     <!-- Acceso lateral / accesibilidad -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Acceso lateral — Rampa accesible al edificio" data-area="Exteriores">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5596-scaled.jpeg" alt="Rampa accesible al edificio" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5596-scaled.jpeg" alt="Rampa accesible al edificio" loading="lazy" / decoding="async">
       <div class="gallery-item-label"><span>Acceso lateral</span><small>Exteriores · Accesibilidad</small></div>
     </div>
     <!-- Zona verde — Biología / Proyecto Aldea -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Jardines — Cipreses y zonas verdes · Proyecto Aldea / Biología" data-area="Jardines">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines del centro con cipreses" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines del centro con cipreses" loading="lazy" / decoding="async">
       <div class="gallery-item-label"><span>Jardines</span><small>Biología · Proyecto Aldea</small></div>
     </div>
     <!-- Patio — zona de convivencia -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Patio del centro — Zona ajardinada con rosales, convivencia del alumnado" data-area="Patio">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/d96c1ae1-d928-44cb-afd9-d2c1d20a196e.jpeg" alt="Patio con rosales" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/d96c1ae1-d928-44cb-afd9-d2c1d20a196e.jpeg" alt="Patio con rosales" loading="lazy" / decoding="async">
       <div class="gallery-item-label"><span>Patio</span><small>Zona ajardinada · Convivencia</small></div>
     </div>
     <!-- Escalera de entrada -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Acceso principal — Escaleras de entrada al edificio" data-area="Exteriores">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Escaleras de acceso principal" loading="lazy" />
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Escaleras de acceso principal" loading="lazy" / decoding="async">
       <div class="gallery-item-label"><span>Entrada principal</span><small>Exteriores · Escaleras</small></div>
     </div>
   </div>
@@ -1604,42 +1624,42 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">💻</div><div><div class="inst-name">Aula TIC</div><div class="inst-desc">Dpto. Informática · TDE</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/tic.jpg" alt="Aula TIC" loading="lazy" data-caption="Aula TIC · Dpto. Informática">
-        <img src="img/galeria/tic-aula.jpg" alt="Aula TIC — vista del aula" loading="lazy" data-caption="Aula TIC — vista del aula">
+        <img src="img/galeria/tic.jpg" alt="Aula TIC" loading="lazy" data-caption="Aula TIC · Dpto. Informática" decoding="async">
+        <img src="img/galeria/tic-aula.jpg" alt="Aula TIC — vista del aula" loading="lazy" data-caption="Aula TIC — vista del aula" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🎨</div><div><div class="inst-name">Aula de Dibujo</div><div class="inst-desc">Dpto. Dibujo y Expresión Plástica</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/dibujo.jpg" alt="Aula de Dibujo" loading="lazy" data-caption="Aula de Dibujo · Dpto. EPV">
-        <img src="img/galeria/dibujo-2.jpg" alt="Trabajos artísticos" loading="lazy" data-caption="Trabajos artísticos del alumnado">
+        <img src="img/galeria/dibujo.jpg" alt="Aula de Dibujo" loading="lazy" data-caption="Aula de Dibujo · Dpto. EPV" decoding="async">
+        <img src="img/galeria/dibujo-2.jpg" alt="Trabajos artísticos" loading="lazy" data-caption="Trabajos artísticos del alumnado" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🔧</div><div><div class="inst-name">Taller de Tecnología / FPB</div><div class="inst-desc">Dpto. Tecnología · FPB Electricidad y Electrónica</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/fp-electricidad.jpg" alt="Taller FPB Electricidad" loading="lazy" data-caption="Taller FPB Electricidad · Dpto. Tecnología">
-        <img src="img/galeria/fp-instalacion.jpg" alt="Prácticas de instalación FPB" loading="lazy" data-caption="Prácticas de instalación eléctrica">
+        <img src="img/galeria/fp-electricidad.jpg" alt="Taller FPB Electricidad" loading="lazy" data-caption="Taller FPB Electricidad · Dpto. Tecnología" decoding="async">
+        <img src="img/galeria/fp-instalacion.jpg" alt="Prácticas de instalación FPB" loading="lazy" data-caption="Prácticas de instalación eléctrica" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🎵</div><div><div class="inst-name">Aula de Música</div><div class="inst-desc">Dpto. Música · Ensayos, coro y piano</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/musica.jpg" alt="Aula de Música — Dpto. Música" loading="lazy" data-caption="Aula de Música · Dpto. de Música">
+        <img src="img/galeria/musica.jpg" alt="Aula de Música — Dpto. Música" loading="lazy" data-caption="Aula de Música · Dpto. de Música" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🎭</div><div><div class="inst-name">SUM · Salón de Usos Múltiples</div><div class="inst-desc">Producciones teatrales dirigidas por Jorge Illanes</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/sum.jpg" alt="Salón de Usos Múltiples (SUM)" loading="lazy" data-caption="SUM — Salón de Usos Múltiples · Producciones teatrales">
+        <img src="img/galeria/sum.jpg" alt="Salón de Usos Múltiples (SUM)" loading="lazy" data-caption="SUM — Salón de Usos Múltiples · Producciones teatrales" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🏋️</div><div><div class="inst-name">Gimnasio</div><div class="inst-desc">Dpto. Ed. Física · Espacio cubierto para prácticas deportivas</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/gimnasio.jpg" alt="Gimnasio del centro" loading="lazy" data-caption="Gimnasio · Dpto. de Educación Física">
-        <img src="img/galeria/gimnasio-2.jpg" alt="Gimnasio — interior" loading="lazy" data-caption="Gimnasio — interior">
-        <img src="img/galeria/gimnasio-3.jpg" alt="Gimnasio — zona deportiva" loading="lazy" data-caption="Gimnasio — zona deportiva">
+        <img src="img/galeria/gimnasio.jpg" alt="Gimnasio del centro" loading="lazy" data-caption="Gimnasio · Dpto. de Educación Física" decoding="async">
+        <img src="img/galeria/gimnasio-2.jpg" alt="Gimnasio — interior" loading="lazy" data-caption="Gimnasio — interior" decoding="async">
+        <img src="img/galeria/gimnasio-3.jpg" alt="Gimnasio — zona deportiva" loading="lazy" data-caption="Gimnasio — zona deportiva" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
@@ -1648,42 +1668,42 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🌳</div><div><div class="inst-name">Patio</div><div class="inst-desc">Zona central del centro, convivencia y actos</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/patio.jpg" alt="Patio del instituto IES Arcelacis" loading="lazy" data-caption="Patio del instituto IES Arcelacis">
+        <img src="img/galeria/patio.jpg" alt="Patio del instituto IES Arcelacis" loading="lazy" data-caption="Patio del instituto IES Arcelacis" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🧩</div><div><div class="inst-name">Aula FBO</div><div class="inst-desc">Formación Básica Obligatoria — atención personalizada</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/fbo-aula.jpg" alt="Aula de Formación Básica Obligatoria (FBO)" loading="lazy" data-caption="Aula de Formación Básica Obligatoria (FBO)">
-        <img src="img/galeria/fbo-taller.jpg" alt="Taller de FBO — prácticas" loading="lazy" data-caption="Taller de FBO — prácticas">
+        <img src="img/galeria/fbo-aula.jpg" alt="Aula de Formación Básica Obligatoria (FBO)" loading="lazy" data-caption="Aula de Formación Básica Obligatoria (FBO)" decoding="async">
+        <img src="img/galeria/fbo-taller.jpg" alt="Taller de FBO — prácticas" loading="lazy" data-caption="Taller de FBO — prácticas" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🌱</div><div><div class="inst-name">Huerto escolar</div><div class="inst-desc">Dpto. Biología · Proyecto ALDEA (educación ambiental)</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/huerto.jpg" alt="Huerto escolar" loading="lazy" data-caption="Huerto escolar · Dpto. Biología">
-        <img src="img/galeria/huerto-2.jpg" alt="Huerto — zona de cultivo" loading="lazy" data-caption="Huerto — zona de cultivo">
+        <img src="img/galeria/huerto.jpg" alt="Huerto escolar" loading="lazy" data-caption="Huerto escolar · Dpto. Biología" decoding="async">
+        <img src="img/galeria/huerto-2.jpg" alt="Huerto — zona de cultivo" loading="lazy" data-caption="Huerto — zona de cultivo" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">☕</div><div><div class="inst-name">Cafetería</div><div class="inst-desc">Zona de descanso y servicio al alumnado</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/cafeteria.jpg" alt="Cafetería del centro" loading="lazy" data-caption="Cafetería del centro">
-        <img src="img/galeria/cafeteria-2.jpg" alt="Cafetería — zona de mesas" loading="lazy" data-caption="Cafetería — zona de mesas">
+        <img src="img/galeria/cafeteria.jpg" alt="Cafetería del centro" loading="lazy" data-caption="Cafetería del centro" decoding="async">
+        <img src="img/galeria/cafeteria-2.jpg" alt="Cafetería — zona de mesas" loading="lazy" data-caption="Cafetería — zona de mesas" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🚻</div><div><div class="inst-name">Aseos</div><div class="inst-desc">Instalaciones sanitarias del centro</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/banos.jpg" alt="Instalaciones sanitarias del centro" loading="lazy" data-caption="Instalaciones sanitarias del centro">
+        <img src="img/galeria/banos.jpg" alt="Instalaciones sanitarias del centro" loading="lazy" data-caption="Instalaciones sanitarias del centro" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🎪</div><div><div class="inst-name">Actividades extraescolares</div><div class="inst-desc">Convivencia y jornadas del alumnado</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/actividades.jpg" alt="Actividades extraescolares — jornada 20/04" loading="lazy" data-caption="Actividades extraescolares — jornada 20/04">
-        <img src="img/galeria/actividades-2.jpg" alt="Actividades extraescolares — convivencia" loading="lazy" data-caption="Actividades extraescolares — convivencia">
-        <img src="img/galeria/actividades-3.jpg" alt="Actividad compartida en Instagram" loading="lazy" data-caption="Actividad compartida en Instagram">
+        <img src="img/galeria/actividades.jpg" alt="Actividades extraescolares — jornada 20/04" loading="lazy" data-caption="Actividades extraescolares — jornada 20/04" decoding="async">
+        <img src="img/galeria/actividades-2.jpg" alt="Actividades extraescolares — convivencia" loading="lazy" data-caption="Actividades extraescolares — convivencia" decoding="async">
+        <img src="img/galeria/actividades-3.jpg" alt="Actividad compartida en Instagram" loading="lazy" data-caption="Actividad compartida en Instagram" decoding="async">
       </div>
     </details>
   </div>
@@ -1742,33 +1762,46 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <p class="section-desc">Estructura de las pruebas de acceso</p>
   </div>
   <article class="select-card fade-up">
+    <!-- Cada píldora enlaza a las ORIENTACIONES oficiales 2025-26 de esa materia concreta -->
     <div class="select-phase">
       <h4>Fase obligatoria</h4>
       <div class="select-tags">
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Lengua Castellana y Lit. II</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Inglés</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Francés</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Matemáticas II</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Mat. Aplicadas CC.SS. II</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Latín II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_lengua_castellana.pdf" target="_blank" rel="noopener">📄 Lengua Castellana y Lit. II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_ingles.pdf" target="_blank" rel="noopener">📄 Inglés</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_frances.pdf" target="_blank" rel="noopener">📄 Francés</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_matematicas.pdf" target="_blank" rel="noopener">📄 Matemáticas II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_matematicas_aplicadas.pdf" target="_blank" rel="noopener">📄 Mat. Aplicadas CC.SS. II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_historia_espana.pdf" target="_blank" rel="noopener">📄 Historia de España</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_latin.pdf" target="_blank" rel="noopener">📄 Latín II</a>
       </div>
     </div>
     <div class="select-phase">
       <h4>Fase voluntaria — Ciencias</h4>
       <div class="select-tags">
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Biología</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Física</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Química</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Dibujo Técnico</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_biologia.pdf" target="_blank" rel="noopener">📄 Biología</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_fisica.pdf" target="_blank" rel="noopener">📄 Física</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_quimica.pdf" target="_blank" rel="noopener">📄 Química</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_dibujo_tecnico.pdf" target="_blank" rel="noopener">📄 Dibujo Técnico</a>
       </div>
     </div>
     <div class="select-phase">
       <h4>Fase voluntaria — Humanidades y CC.SS.</h4>
       <div class="select-tags">
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Empresa y Modelos de Negocio</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Geografía</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Griego II</a>
-        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Historia del Arte</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_empresa_diseno.pdf" target="_blank" rel="noopener">📄 Empresa y Modelos de Negocio</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_geografia.pdf" target="_blank" rel="noopener">📄 Geografía</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_griego.pdf" target="_blank" rel="noopener">📄 Griego II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/examanes_anios_anteriores/selectividad/sel_2025-2026-Orientaciones_historia_arte.pdf" target="_blank" rel="noopener">📄 Historia del Arte</a>
+      </div>
+    </div>
+    <!-- Recursos globales (calendario, ponderaciones, exámenes anteriores, admisión) -->
+    <div class="select-phase">
+      <h4>Información general</h4>
+      <div class="select-tags">
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_calendario.php" target="_blank" rel="noopener">📅 Calendario PEvAU 2025/26</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">⚖️ Parámetros ponderación</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_examenes_anteriores.php" target="_blank" rel="noopener">🗂️ Exámenes anteriores</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_procedimiento_acceso.php" target="_blank" rel="noopener">🎓 Procedimiento de acceso</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=mapa" target="_blank" rel="noopener">🗺️ Distrito Único Andaluz</a>
       </div>
     </div>
   </article>
@@ -1857,14 +1890,14 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
 <!-- EU BANNER -->
 <div class="eu-banner">
   <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/wp-content/themes/pencil/images/andalucia-ue-color.png"
-       alt="Consejería de Desarrollo Educativo — Unión Europea" height="36" loading="lazy" />
+       alt="Consejería de Desarrollo Educativo — Unión Europea" height="36" loading="lazy" / decoding="async">
 </div>
 
 <!-- FOOTER -->
 <footer class="footer" role="contentinfo">
   <div class="footer-logo">
     <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png"
-         alt="IES Arcelacis" width="34" height="34" loading="lazy" />
+         alt="IES Arcelacis" width="34" height="34" loading="lazy" / decoding="async">
   </div>
   <p><strong>IES Arcelacis</strong> — Santaella, Córdoba</p>
   <p style="margin-top:3px">C. Villargallegos, s/n · Tel. 957 31 34 55</p>
@@ -2356,6 +2389,57 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
   }
 })();
 
+/* ═══════════════════════════════════════════════════════════════════
+   MAGNETIC HOVER — píldoras premium (pointermove tracked, rAF-throttled)
+   ─────────────────────────────────────────────────────────────────
+   Skip en touch / reduced-motion. Desktop only: el tag sigue el cursor
+   con desplazamiento suave (magnetic pull) limitado a 6px.
+*/
+(function(){
+  if (matchMedia('(hover:none)').matches) return;
+  if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  var SELECTOR = 'a.oferta-tag,a.plan-item,a.select-tag';
+  var tracked = null, raf = 0, tx = 0, ty = 0;
+
+  function onMove(ev){
+    if (!tracked) return;
+    var r = tracked.getBoundingClientRect();
+    var cx = r.left + r.width/2;
+    var cy = r.top  + r.height/2;
+    var dx = (ev.clientX - cx) * 0.25;
+    var dy = (ev.clientY - cy) * 0.35;
+    var max = 6;
+    tx = Math.max(-max, Math.min(max, dx));
+    ty = Math.max(-max, Math.min(max, dy));
+    if (!raf) raf = requestAnimationFrame(flush);
+  }
+  function flush(){
+    raf = 0;
+    if (tracked) tracked.style.transform = 'translate3d(' + tx + 'px,' + (ty - 1) + 'px,0)';
+  }
+  function onEnter(ev){
+    var t = ev.target.closest && ev.target.closest(SELECTOR);
+    if (!t) return;
+    if (tracked && tracked !== t) reset(tracked);
+    tracked = t;
+    t.style.willChange = 'transform';
+  }
+  function onLeave(ev){
+    var t = ev.target.closest && ev.target.closest(SELECTOR);
+    if (!t || t !== tracked) return;
+    reset(t);
+  }
+  function reset(t){
+    t.style.transform = '';
+    t.style.willChange = '';
+    if (t === tracked) tracked = null;
+    if (raf){ cancelAnimationFrame(raf); raf = 0; }
+  }
+  document.addEventListener('pointerover', onEnter, { passive: true });
+  document.addEventListener('pointerout',  onLeave, { passive: true });
+  document.addEventListener('pointermove', onMove,  { passive: true });
+})();
+
 /* ============================================================
    SERVICE WORKER REGISTRATION — PWA offline + install
 ============================================================ */
@@ -2522,7 +2606,7 @@ if ('serviceWorker' in navigator) {
       spring(
         [rect.left, rect.top, rect.width, rect.height],
         [target.x, target.y, target.w, target.h],
-        { stiffness: 400, damping: 30, mass: 0.5 },   // bounce:0.2, duration:0.4
+        { stiffness: 280, damping: 20, mass: 0.8 },   // Framer premium: tension 280 / friction 20 / mass 0.8
         function(v){
           stage.style.width  = v[2] + 'px';
           stage.style.height = v[3] + 'px';
@@ -2561,7 +2645,7 @@ if ('serviceWorker' in navigator) {
     spring(
       [stageRect.left, stageRect.top, stageRect.width, stageRect.height],
       target,
-      { stiffness: 500, damping: 36, mass: 0.45 },   // cierre más snappy
+      { stiffness: 360, damping: 28, mass: 0.65 },   // cierre snappy pero con damping coherente
       function(v){
         stage.style.width  = v[2] + 'px';
         stage.style.height = v[3] + 'px';
