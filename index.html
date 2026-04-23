@@ -832,24 +832,106 @@ ul,ol{list-style:none}
    con clase .lightbox-src. Oscurecimiento total + backdrop-blur intenso
    + scale elástico. Accesible (Escape para cerrar, aria-modal).
    ═══════════════════════════════════════════════════════════════════ */
-.lbx-root{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(4,8,20,.78);backdrop-filter:blur(24px) saturate(1.3);-webkit-backdrop-filter:blur(24px) saturate(1.3);opacity:0;pointer-events:none;transition:opacity 260ms cubic-bezier(.4,0,.2,1)}
-.lbx-root.lbx-open{display:flex;opacity:1;pointer-events:auto}
+/* ── LIGHTBOX PREMIUM v3 — Spring physics ─────────────────────── */
+.lbx-root{
+  position:fixed;inset:0;z-index:100000;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  background:rgba(4,8,20,.0);
+  backdrop-filter:blur(0px) saturate(1);-webkit-backdrop-filter:blur(0px) saturate(1);
+  opacity:0;pointer-events:none;
+  transition:
+    opacity 280ms cubic-bezier(.4,0,.2,1),
+    background 280ms cubic-bezier(.4,0,.2,1),
+    backdrop-filter 280ms cubic-bezier(.4,0,.2,1);
+}
+.lbx-root.lbx-open{
+  opacity:1;pointer-events:auto;
+  background:rgba(4,8,20,.88);
+  backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);
+}
 .lbx-backdrop{position:absolute;inset:0;cursor:zoom-out}
-.lbx-stage{position:relative;max-width:min(1200px,94vw);max-height:88vh;display:flex;align-items:center;justify-content:center;transform:scale(.72);opacity:0;transition:transform 420ms cubic-bezier(.34,1.56,.64,1),opacity 240ms ease-out;will-change:transform,opacity}
-.lbx-root.lbx-open .lbx-stage{transform:scale(1);opacity:1}
-.lbx-img{max-width:100%;max-height:88vh;display:block;border-radius:14px;box-shadow:0 40px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08),0 0 60px rgba(59,130,246,.15);background:#0f172a;object-fit:contain}
-.lbx-caption{position:absolute;left:0;right:0;bottom:-48px;text-align:center;color:#e2e8f0;font-size:.95rem;font-weight:500;letter-spacing:.01em;text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none}
-.lbx-close{position:absolute;top:-52px;right:-4px;width:44px;height:44px;border-radius:50%;background:rgba(15,23,42,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);color:#f8fafc;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 180ms ease,transform 180ms ease,border-color 180ms ease;font-size:0;line-height:0}
-.lbx-close::before,.lbx-close::after{content:"";position:absolute;width:18px;height:2px;background:currentColor;border-radius:2px;top:50%;left:50%;margin-left:-9px;margin-top:-1px}
+
+/* Spring entrance — stiffness≈320, damping≈20 via cubic-bezier(.34,1.56,.64,1) */
+.lbx-stage{
+  position:relative;max-width:min(1200px,94vw);max-height:88vh;
+  display:flex;align-items:center;justify-content:center;
+  transform:scale(.64) translateY(40px);
+  opacity:0;
+  transition:
+    transform 540ms cubic-bezier(.34,1.56,.64,1),
+    opacity   280ms cubic-bezier(.4,0,.2,1);
+  will-change:transform,opacity;
+}
+.lbx-root.lbx-open .lbx-stage{
+  transform:scale(1) translateY(0);opacity:1;
+}
+/* Closing spring — snappy collapse */
+.lbx-root.lbx-closing .lbx-stage{
+  transform:scale(.82) translateY(24px);opacity:0;
+  transition:
+    transform 280ms cubic-bezier(.4,0,.2,1),
+    opacity   200ms cubic-bezier(.4,0,.2,1);
+}
+
+.lbx-img{
+  max-width:100%;max-height:88vh;display:block;border-radius:16px;
+  box-shadow:
+    0 48px 100px rgba(0,0,0,.62),
+    0 0 0 1px rgba(255,255,255,.09),
+    0 0 80px rgba(59,130,246,.12);
+  background:#0f172a;object-fit:contain;
+}
+
+/* Badge area (injected via JS if data-area present) */
+.lbx-badge{
+  position:absolute;top:-44px;left:0;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;
+  background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.28);
+  border-radius:100px;color:#93c5fd;font-size:.7rem;font-weight:600;
+  letter-spacing:.04em;text-transform:uppercase;
+  opacity:0;transform:translateY(6px);
+  transition:opacity 300ms ease 120ms,transform 300ms cubic-bezier(.34,1.44,.64,1) 120ms;
+}
+.lbx-root.lbx-open .lbx-badge{opacity:1;transform:translateY(0)}
+
+.lbx-caption{
+  position:absolute;left:0;right:0;bottom:-52px;
+  text-align:center;color:rgba(226,232,240,.8);
+  font-size:.9rem;font-weight:500;letter-spacing:.01em;
+  text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none;
+  opacity:0;transform:translateY(8px);
+  transition:opacity 300ms ease 80ms,transform 300ms cubic-bezier(.34,1.44,.64,1) 80ms;
+}
+.lbx-root.lbx-open .lbx-caption{opacity:1;transform:translateY(0)}
+
+.lbx-close{
+  position:absolute;top:-52px;right:-4px;width:44px;height:44px;
+  border-radius:50%;background:rgba(15,23,42,.72);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);color:#f8fafc;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background 180ms ease,transform 260ms cubic-bezier(.34,1.56,.64,1),border-color 180ms ease;
+  font-size:0;line-height:0;
+}
+.lbx-close::before,.lbx-close::after{
+  content:"";position:absolute;width:18px;height:2px;
+  background:currentColor;border-radius:2px;
+  top:50%;left:50%;margin-left:-9px;margin-top:-1px;
+}
 .lbx-close::before{transform:rotate(45deg)}
 .lbx-close::after{transform:rotate(-45deg)}
-.lbx-close:hover{background:rgba(59,130,246,.85);transform:scale(1.08) rotate(90deg);border-color:rgba(147,197,253,.5)}
+.lbx-close:hover{background:rgba(59,130,246,.85);transform:scale(1.12) rotate(90deg);border-color:rgba(147,197,253,.5)}
+.lbx-close:active{transform:scale(.9) rotate(90deg)}
 .lbx-close:focus-visible{outline:2px solid #60a5fa;outline-offset:3px}
+
 img[data-lightbox]{cursor:zoom-in;transition:transform var(--dur-mid) var(--ease-smooth),filter var(--dur-mid) var(--ease-smooth)}
 body.lbx-locked{overflow:hidden}
+
 @media (max-width:640px){
   .lbx-close{top:-48px;right:0;width:40px;height:40px}
-  .lbx-caption{bottom:-40px;font-size:.85rem}
+  .lbx-caption{bottom:-44px;font-size:.82rem}
   .lbx-stage{max-width:96vw;max-height:80vh}
   .lbx-img{max-height:80vh;border-radius:10px}
 }
@@ -888,6 +970,7 @@ a.card-link:hover{transform:translateY(-3px);box-shadow:var(--sh-xl)}
 a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;border-radius:var(--rl)}
 /* FBO variant color-coded — verde (etapa obligatoria específica) */
 .oferta-top.fbo{background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%)}
+
 
 </style>
 </head>
@@ -970,16 +1053,6 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <div class="stat-card fade-up"><div class="stat-num" data-target="40">0</div><div class="stat-label">Profesores</div></div>
     <div class="stat-card fade-up"><div class="stat-num" data-target="3">0</div><div class="stat-label">Etapas</div></div>
     <div class="stat-card fade-up"><div class="stat-num" data-target="12">0</div><div class="stat-label">Programas</div></div>
-  </div>
-  <div class="gallery-scroll-wrap" style="margin-top:20px">
-  <div class="gallery-scroll">
-    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" alt="Fachada principal" loading="lazy" /><div class="gallery-card-overlay"><span>Fachada principal</span><small>Entrada con banderas institucionales</small></div></div>
-    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Acceso al edificio" loading="lazy" /><div class="gallery-card-overlay"><span>Acceso principal</span><small>Escaleras de entrada al centro</small></div></div>
-    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5598-scaled.jpeg" alt="Biblioteca" loading="lazy" /><div class="gallery-card-overlay"><span>Biblioteca</span><small>"Today a Reader, Tomorrow a Leader"</small></div></div>
-    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines" loading="lazy" /><div class="gallery-card-overlay"><span>Jardines</span><small>Zonas verdes del centro</small></div></div>
-    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5596-scaled.jpeg" alt="Rampa de acceso" loading="lazy" /><div class="gallery-card-overlay"><span>Acceso lateral</span><small>Rampa accesible al edificio</small></div></div>
-    <div class="gallery-card"><img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/d96c1ae1-d928-44cb-afd9-d2c1d20a196e.jpeg" alt="Patio" loading="lazy" /><div class="gallery-card-overlay"><span>Patio del centro</span><small>Zona ajardinada con rosales</small></div></div>
-  </div>
   </div>
 </section>
 
@@ -1461,72 +1534,133 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <h2 class="section-title">Instalaciones</h2>
     <p class="section-desc">Nuestros espacios educativos y deportivos</p>
   </div>
+  <!-- Exteriores e interiores del centro — categorizados semánticamente -->
   <div class="gallery-grid stagger">
-    <div class="gallery-item wide fade-up">
+    <!-- Accesos y fachada -->
+    <div class="gallery-item wide fade-up" data-lightbox data-caption="Fachada principal — Entrada con banderas institucionales" data-area="Exteriores">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" alt="Fachada principal del IES Arcelacis" loading="lazy" />
+      <div class="gallery-item-label"><span>Fachada principal</span><small>Exteriores · Acceso</small></div>
+    </div>
+    <div class="gallery-item fade-up" data-lightbox data-caption="Hall del centro — Vestíbulo con exposiciones del alumnado" data-area="Interiores">
       <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5740-2-scaled.jpeg" alt="Hall interior del centro" loading="lazy" />
-      <div class="gallery-item-label"><span>Hall del centro</span><small>Vestíbulo principal con exposiciones</small></div>
+      <div class="gallery-item-label"><span>Hall del centro</span><small>Interiores · Exposiciones</small></div>
     </div>
-    <div class="gallery-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Entrada con escaleras" loading="lazy" />
-      <div class="gallery-item-label"><span>Entrada principal</span><small>Escaleras de acceso</small></div>
-    </div>
-    <div class="gallery-item fade-up">
+    <!-- Biblioteca — Lengua / Coordinación de Bibliotecas Escolares -->
+    <div class="gallery-item fade-up" data-lightbox data-caption="Biblioteca — "Today a Reader, Tomorrow a Leader" · Dpto. Lengua" data-area="Biblioteca">
       <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5598-scaled.jpeg" alt="Biblioteca del centro" loading="lazy" />
-      <div class="gallery-item-label"><span>Biblioteca</span><small>Sala de lectura y estudio</small></div>
+      <div class="gallery-item-label"><span>Biblioteca</span><small>Dpto. Lengua Castellana</small></div>
     </div>
-    <div class="gallery-item fade-up">
+    <!-- Acceso lateral / accesibilidad -->
+    <div class="gallery-item fade-up" data-lightbox data-caption="Acceso lateral — Rampa accesible al edificio" data-area="Exteriores">
       <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5596-scaled.jpeg" alt="Rampa accesible al edificio" loading="lazy" />
-      <div class="gallery-item-label"><span>Acceso lateral</span><small>Rampa accesible al edificio</small></div>
+      <div class="gallery-item-label"><span>Acceso lateral</span><small>Exteriores · Accesibilidad</small></div>
     </div>
-    <div class="gallery-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines del centro" loading="lazy" />
-      <div class="gallery-item-label"><span>Jardines</span><small>Cipreses y zonas verdes</small></div>
+    <!-- Zona verde — Biología / Proyecto Aldea -->
+    <div class="gallery-item fade-up" data-lightbox data-caption="Jardines — Cipreses y zonas verdes · Proyecto Aldea / Biología" data-area="Jardines">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines del centro con cipreses" loading="lazy" />
+      <div class="gallery-item-label"><span>Jardines</span><small>Biología · Proyecto Aldea</small></div>
     </div>
-    <div class="gallery-item fade-up">
+    <!-- Patio — zona de convivencia -->
+    <div class="gallery-item fade-up" data-lightbox data-caption="Patio del centro — Zona ajardinada con rosales, convivencia del alumnado" data-area="Patio">
       <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/d96c1ae1-d928-44cb-afd9-d2c1d20a196e.jpeg" alt="Patio con rosales" loading="lazy" />
-      <div class="gallery-item-label"><span>Patio</span><small>Zona ajardinada con rosales</small></div>
+      <div class="gallery-item-label"><span>Patio</span><small>Zona ajardinada · Convivencia</small></div>
+    </div>
+    <!-- Escalera de entrada -->
+    <div class="gallery-item fade-up" data-lightbox data-caption="Acceso principal — Escaleras de entrada al edificio" data-area="Exteriores">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Escaleras de acceso principal" loading="lazy" />
+      <div class="gallery-item-label"><span>Entrada principal</span><small>Exteriores · Escaleras</small></div>
     </div>
   </div>
+  <!-- V23 — Instalaciones con galería in-place: cada <details class="inst-item">
+       despliega su propio conjunto de fotos al interactuar. Sin secciones
+       redundantes, respetando el DOM original de la sección Instalaciones. -->
   <div class="inst-list stagger" style="margin-top:20px">
-    <div class="inst-item fade-up"><div class="inst-icon">📚</div><div><div class="inst-name">Biblioteca</div><div class="inst-desc">Sala de lectura, consulta y estudio con recursos digitales</div></div></div>
-    <div class="inst-item fade-up"><div class="inst-icon">🔬</div><div><div class="inst-name">Laboratorio</div><div class="inst-desc">Prácticas de Física, Química y Biología</div></div></div>
-    <div class="inst-item fade-up"><div class="inst-icon">💻</div><div><div class="inst-name">Aula TIC</div><div class="inst-desc">Sala de informática con ordenadores</div></div></div>
-    <div class="inst-item fade-up"><div class="inst-icon">🎨</div><div><div class="inst-name">Aula de Dibujo</div><div class="inst-desc">Expresión artística y dibujo técnico</div></div></div>
-    <div class="inst-item fade-up"><div class="inst-icon">🔧</div><div><div class="inst-name">Aula de Tecnología</div><div class="inst-desc">Taller para proyectos y prácticas de FPB</div></div></div>
-    <div class="inst-item fade-up"><div class="inst-icon">🎵</div><div><div class="inst-name">Aula de Música</div><div class="inst-desc">Ensayos y producciones teatrales</div></div></div>
-    <div class="inst-item fade-up"><div class="inst-icon">🏀</div><div><div class="inst-name">Pistas deportivas</div><div class="inst-desc">Baloncesto, fútbol sala y espacio cubierto</div></div></div>
-    <div class="inst-item fade-up"><div class="inst-icon">🏢</div><div><div class="inst-name">Secretaría</div><div class="inst-desc">Gestión administrativa y matriculación</div></div></div>
-  </div>
-
-  <!-- V22 — Galería expandida con fotos del instituto (Lightbox-enabled) -->
-  <div class="section-header fade-up" style="margin-top:32px">
-    <div class="section-label">Recorrido visual</div>
-    <h2 class="section-title" style="font-size:1.6rem">Espacios del centro</h2>
-    <p class="section-desc">Haz clic en cualquier imagen para verla en detalle</p>
-  </div>
-  <div class="gal22 stagger">
-    <div class="gal22-item fade-up tall"><img src="img/galeria/patio.jpg" alt="Patio del instituto" loading="lazy" data-caption="Patio del instituto IES Arcelacis"><div class="gal22-label">Patio</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/fbo-aula.jpg" alt="Aula FBO" loading="lazy" data-caption="Aula de Formación Básica Obligatoria (FBO)"><div class="gal22-label">Aula FBO</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/fbo-taller.jpg" alt="Taller FBO" loading="lazy" data-caption="Taller de FBO — prácticas"><div class="gal22-label">Taller FBO</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/fp-electricidad.jpg" alt="FP Electricidad" loading="lazy" data-caption="FP Básica de Electricidad — taller"><div class="gal22-label">FP Electricidad</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/fp-instalacion.jpg" alt="FP Instalación" loading="lazy" data-caption="FP Básica — prácticas de instalación"><div class="gal22-label">FP — Instalaciones</div></div>
-    <div class="gal22-item fade-up tall"><img src="img/galeria/tic.jpg" alt="Aula TIC" loading="lazy" data-caption="Aula TIC — equipamiento informático"><div class="gal22-label">Aula TIC</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/tic-aula.jpg" alt="Aula TIC detalle" loading="lazy" data-caption="Aula TIC — vista del aula"><div class="gal22-label">Informática</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/huerto.jpg" alt="Huerto escolar" loading="lazy" data-caption="Huerto escolar — Proyecto Aldea"><div class="gal22-label">Huerto escolar</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/huerto-2.jpg" alt="Huerto vista 2" loading="lazy" data-caption="Huerto escolar — zona de cultivo"><div class="gal22-label">Huerto · Proyecto Aldea</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/gimnasio.jpg" alt="Gimnasio" loading="lazy" data-caption="Gimnasio del centro"><div class="gal22-label">Gimnasio</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/gimnasio-2.jpg" alt="Gimnasio interior" loading="lazy" data-caption="Gimnasio — interior"><div class="gal22-label">Pistas deportivas</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/gimnasio-3.jpg" alt="Gimnasio deportivo" loading="lazy" data-caption="Gimnasio — zona deportiva"><div class="gal22-label">Zona deportiva</div></div>
-    <div class="gal22-item fade-up tall"><img src="img/galeria/dibujo.jpg" alt="Aula de dibujo" loading="lazy" data-caption="Aula de Dibujo y Expresión Plástica"><div class="gal22-label">Aula de Dibujo</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/dibujo-2.jpg" alt="Dibujos del alumnado" loading="lazy" data-caption="Trabajos artísticos del alumnado"><div class="gal22-label">Trabajos artísticos</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/cafeteria.jpg" alt="Cafetería" loading="lazy" data-caption="Cafetería del centro"><div class="gal22-label">Cafetería</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/cafeteria-2.jpg" alt="Cafetería vista 2" loading="lazy" data-caption="Cafetería — zona de mesas"><div class="gal22-label">Zona de descanso</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/sum.jpg" alt="Salón de Usos Múltiples" loading="lazy" data-caption="Salón de Usos Múltiples (SUM)"><div class="gal22-label">SUM</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/banos.jpg" alt="Baños del centro" loading="lazy" data-caption="Instalaciones sanitarias del centro"><div class="gal22-label">Aseos</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/actividades.jpg" alt="Actividades extraescolares" loading="lazy" data-caption="Actividades extraescolares — jornada 20/04"><div class="gal22-label">Extraescolares</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/actividades-2.jpg" alt="Actividades extraescolares 2" loading="lazy" data-caption="Actividades extraescolares — convivencia"><div class="gal22-label">Convivencia</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/actividades-3.jpg" alt="Actividades Instagram" loading="lazy" data-caption="Actividad compartida en Instagram"><div class="gal22-label">Eventos</div></div>
-    <div class="gal22-item fade-up"><img src="img/galeria/proyecto-aldea.png" alt="Proyecto Aldea — logo" loading="lazy" data-caption="Proyecto Aldea · IES Arcelacis"><div class="gal22-label">Proyecto Aldea</div></div>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">📚</div><div><div class="inst-name">Biblioteca</div><div class="inst-desc">Sala de lectura, consulta y estudio con recursos digitales</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🔬</div><div><div class="inst-name">Laboratorio</div><div class="inst-desc">Prácticas de Física, Química y Biología</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">💻</div><div><div class="inst-name">Aula TIC</div><div class="inst-desc">Sala de informática con ordenadores</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/tic.jpg" alt="Aula TIC" loading="lazy" data-caption="Aula TIC — equipamiento informático">
+        <img src="img/galeria/tic-aula.jpg" alt="Aula TIC — vista del aula" loading="lazy" data-caption="Aula TIC — vista del aula">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🎨</div><div><div class="inst-name">Aula de Dibujo</div><div class="inst-desc">Expresión artística y dibujo técnico</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/dibujo.jpg" alt="Aula de Dibujo y Expresión Plástica" loading="lazy" data-caption="Aula de Dibujo y Expresión Plástica">
+        <img src="img/galeria/dibujo-2.jpg" alt="Trabajos artísticos del alumnado" loading="lazy" data-caption="Trabajos artísticos del alumnado">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🔧</div><div><div class="inst-name">Aula de Tecnología</div><div class="inst-desc">Taller para proyectos y prácticas de FPB</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/fp-electricidad.jpg" alt="FP Básica de Electricidad — taller" loading="lazy" data-caption="FP Básica de Electricidad — taller">
+        <img src="img/galeria/fp-instalacion.jpg" alt="FP Básica — prácticas de instalación" loading="lazy" data-caption="FP Básica — prácticas de instalación">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🎵</div><div><div class="inst-name">Aula de Música</div><div class="inst-desc">Ensayos y producciones teatrales</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/sum.jpg" alt="Salón de Usos Múltiples — producciones" loading="lazy" data-caption="Salón de Usos Múltiples (SUM) — producciones musicales">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🏀</div><div><div class="inst-name">Pistas deportivas</div><div class="inst-desc">Baloncesto, fútbol sala y espacio cubierto</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/gimnasio.jpg" alt="Gimnasio del centro" loading="lazy" data-caption="Gimnasio del centro">
+        <img src="img/galeria/gimnasio-2.jpg" alt="Gimnasio — interior" loading="lazy" data-caption="Gimnasio — interior">
+        <img src="img/galeria/gimnasio-3.jpg" alt="Gimnasio — zona deportiva" loading="lazy" data-caption="Gimnasio — zona deportiva">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🏢</div><div><div class="inst-name">Secretaría</div><div class="inst-desc">Gestión administrativa y matriculación</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🌳</div><div><div class="inst-name">Patio</div><div class="inst-desc">Zona central del centro, convivencia y actos</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/patio.jpg" alt="Patio del instituto IES Arcelacis" loading="lazy" data-caption="Patio del instituto IES Arcelacis">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🧩</div><div><div class="inst-name">Aula FBO</div><div class="inst-desc">Formación Básica Obligatoria — atención personalizada</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/fbo-aula.jpg" alt="Aula de Formación Básica Obligatoria (FBO)" loading="lazy" data-caption="Aula de Formación Básica Obligatoria (FBO)">
+        <img src="img/galeria/fbo-taller.jpg" alt="Taller de FBO — prácticas" loading="lazy" data-caption="Taller de FBO — prácticas">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🌱</div><div><div class="inst-name">Huerto escolar</div><div class="inst-desc">Proyecto Aldea — educación ambiental</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/huerto.jpg" alt="Huerto escolar — Proyecto Aldea" loading="lazy" data-caption="Huerto escolar — Proyecto Aldea">
+        <img src="img/galeria/huerto-2.jpg" alt="Huerto escolar — zona de cultivo" loading="lazy" data-caption="Huerto escolar — zona de cultivo">
+        <img src="img/galeria/proyecto-aldea.png" alt="Proyecto Aldea — logo" loading="lazy" data-caption="Proyecto Aldea · IES Arcelacis">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">☕</div><div><div class="inst-name">Cafetería</div><div class="inst-desc">Zona de descanso y servicio al alumnado</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/cafeteria.jpg" alt="Cafetería del centro" loading="lazy" data-caption="Cafetería del centro">
+        <img src="img/galeria/cafeteria-2.jpg" alt="Cafetería — zona de mesas" loading="lazy" data-caption="Cafetería — zona de mesas">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🚻</div><div><div class="inst-name">Aseos</div><div class="inst-desc">Instalaciones sanitarias del centro</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/banos.jpg" alt="Instalaciones sanitarias del centro" loading="lazy" data-caption="Instalaciones sanitarias del centro">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🎪</div><div><div class="inst-name">Actividades extraescolares</div><div class="inst-desc">Convivencia y jornadas del alumnado</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/actividades.jpg" alt="Actividades extraescolares — jornada 20/04" loading="lazy" data-caption="Actividades extraescolares — jornada 20/04">
+        <img src="img/galeria/actividades-2.jpg" alt="Actividades extraescolares — convivencia" loading="lazy" data-caption="Actividades extraescolares — convivencia">
+        <img src="img/galeria/actividades-3.jpg" alt="Actividad compartida en Instagram" loading="lazy" data-caption="Actividad compartida en Instagram">
+      </div>
+    </details>
   </div>
 </section>
 
@@ -1538,7 +1672,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <p class="section-desc">Iniciativas activas para enriquecer la experiencia educativa</p>
   </div>
   <div class="plan-grid stagger">
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/participacion-y-oficio" target="_blank" rel="noopener" aria-label="Ver planes de Participación y Oficio en Junta de Andalucía">
+    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/biblioteca-escolar" target="_blank" rel="noopener" aria-label="Ver planes de Participación y Oficio en Junta de Andalucía">
       <h4>Participación y oficio</h4>
       <div class="plan-items">
         <span class="plan-item">Bibliotecas Escolares</span>
@@ -1549,9 +1683,13 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
         <span class="plan-item">Compensación Educativa</span>
       </div>
       <div class="plan-coord">Coordinadores: Caridad Jiménez · Aroa Meana · Mónica Gálvez</div>
-      <div class="inst-link" style="margin-top:12px">Portal oficial · Junta</div>
+      <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/biblioteca-escolar" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Bibliotecas Escolares · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/bienestar-emocional" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Bienestar Emocional · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/igualdad-de-genero" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Plan de Igualdad · Junta</a>
+      </div>
     </a>
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/convocatoria-general" target="_blank" rel="noopener" aria-label="Ver Convocatoria General de Planes en Junta de Andalucía">
+    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/red-espacio-de-paz" target="_blank" rel="noopener" aria-label="Ver Convocatoria General de Planes en Junta de Andalucía">
       <h4>Convocatoria general</h4>
       <div class="plan-items">
         <span class="plan-item">Red Espacio de Paz</span>
@@ -1561,16 +1699,23 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
         <span class="plan-item">Prácticum Secundaria</span>
       </div>
       <div class="plan-coord">Coordinadores: M.ª Dolores Graciano · M.ª Dolores García · Aroa Meana</div>
-      <div class="inst-link" style="margin-top:12px">Portal oficial · Junta</div>
+      <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/red-espacio-de-paz" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Red Espacio de Paz · Junta</a>
+        <a href="https://agenciamedioambienteyagua.es/aldea" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Portal Proyecto Aldea · AMAYA</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/habitos-vida-saludable" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Hábitos Saludables · Junta</a>
+      </div>
     </a>
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/convocatoria-especifica" target="_blank" rel="noopener" aria-label="Ver Convocatoria Específica de Planes en Junta de Andalucía">
+    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/zona-de-transformacion-social" target="_blank" rel="noopener" aria-label="Ver Convocatoria Específica de Planes en Junta de Andalucía">
       <h4>Convocatoria específica</h4>
       <div class="plan-items">
         <span class="plan-item">Programa Atención ZTS</span>
         <span class="plan-item">Más Equidad 2025</span>
         <span class="plan-item">Aulas Verdes Abiertas 2025</span>
       </div>
-      <div class="inst-link" style="margin-top:12px">Portal oficial · Junta</div>
+      <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/zona-de-transformacion-social" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Zonas Transformación Social · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/aulas-verdes" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Aulas Verdes Abiertas · Junta</a>
+      </div>
     </a>
   </div>
 </section>
@@ -1582,7 +1727,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <h2 class="section-title">Selectividad</h2>
     <p class="section-desc">Estructura de las pruebas de acceso</p>
   </div>
-  <a class="select-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/universidaduniversidadinvestigacioneinnovacion/areas/universidades/acceso.html" target="_blank" rel="noopener" aria-label="Ver Acceso a la Universidad (PEvAU/Selectividad) en Junta de Andalucía">
+  <a class="select-card fade-up card-link" href="https://www.juntadeandalucia.es/economiainnovacioncienciayempleo/unia/html/acceso/alumnos/prueba.html" target="_blank" rel="noopener" aria-label="Ver PEvAU/Selectividad — Distrito Único Andaluz">
     <div class="select-phase">
       <h4>Fase obligatoria</h4>
       <div class="select-tags">
@@ -1612,8 +1757,10 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
         <span class="select-tag">Historia del Arte</span>
       </div>
     </div>
-    <div class="select-phase" style="display:flex;justify-content:center;padding:14px 16px;border-top:1px solid var(--s200)">
-      <div class="inst-link">Portal de Acceso Universitario · Junta</div>
+    <div class="select-phase" style="display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px;border-top:1px solid var(--s200)">
+      <a href="https://www.juntadeandalucia.es/distritounicoandaluz/" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Distrito Único Andaluz — Admisión universitaria</a>
+      <a href="https://www.juntadeandalucia.es/distritounicoandaluz/comun/html/vistaPreviaContenido.html?idContenido=41694&idPortal=45&idVersion=0" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Parámetros de ponderación por universidad y grado</a>
+      <a href="https://www.juntadeandalucia.es/economiainnovacioncienciayempleo/unia/html/acceso/alumnos/notas_corte.html" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Notas de corte oficiales — Universidades andaluzas</a>
     </div>
   </a>
 </section>
@@ -2219,7 +2366,7 @@ if ('serviceWorker' in navigator) {
    Inyección del markup diferida a DOMContentLoaded para no bloquear.
 */
 (function(){
-  var root,img,caption,lastFocus;
+  var root,img,caption,badge,lastFocus,closeTimer;
   function ensureRoot(){
     if (root) return root;
     root = document.createElement('div');
@@ -2229,6 +2376,7 @@ if ('serviceWorker' in navigator) {
     root.setAttribute('aria-hidden','true');
     root.innerHTML = '<div class="lbx-backdrop" data-lbx-close></div>'+
       '<div class="lbx-stage">'+
+        '<span class="lbx-badge"></span>'+
         '<button class="lbx-close" type="button" aria-label="Cerrar imagen" data-lbx-close></button>'+
         '<img class="lbx-img" alt="" />'+
         '<div class="lbx-caption"></div>'+
@@ -2236,17 +2384,21 @@ if ('serviceWorker' in navigator) {
     document.body.appendChild(root);
     img = root.querySelector('.lbx-img');
     caption = root.querySelector('.lbx-caption');
+    badge = root.querySelector('.lbx-badge');
     root.addEventListener('click', function(ev){
       if (ev.target.hasAttribute && ev.target.hasAttribute('data-lbx-close')) close();
     });
     return root;
   }
-  function open(src, alt, cap){
+  function open(src, alt, cap, area){
+    if (closeTimer) { clearTimeout(closeTimer); root.classList.remove('lbx-closing'); }
     ensureRoot();
     lastFocus = document.activeElement;
     img.src = src;
     img.alt = alt || '';
     caption.textContent = cap || alt || '';
+    if (area) { badge.textContent = area; badge.style.display = 'inline-flex'; }
+    else { badge.style.display = 'none'; }
     document.body.classList.add('lbx-locked');
     root.classList.add('lbx-open');
     root.setAttribute('aria-hidden','false');
@@ -2255,10 +2407,14 @@ if ('serviceWorker' in navigator) {
   }
   function close(){
     if (!root) return;
+    root.classList.add('lbx-closing');
     root.classList.remove('lbx-open');
     root.setAttribute('aria-hidden','true');
     document.body.classList.remove('lbx-locked');
-    setTimeout(function(){ if (img) img.src=''; }, 280);
+    closeTimer = setTimeout(function(){
+      root.classList.remove('lbx-closing');
+      if (img) img.src = '';
+    }, 320);
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
   function isEligible(el){
@@ -2271,8 +2427,13 @@ if ('serviceWorker' in navigator) {
     var t = ev.target;
     if (!isEligible(t)) return;
     ev.preventDefault();
-    var cap = t.getAttribute('data-caption') || t.alt || '';
-    open(t.currentSrc || t.src, t.alt, cap);
+    /* Resolve caption + area from img itself or nearest [data-lightbox] ancestor */
+    var parent = t.closest('[data-lightbox]') || t.closest('.gallery-item,.gal22-item,.gallery-card');
+    var cap = t.getAttribute('data-caption')
+      || (parent && parent.getAttribute('data-caption'))
+      || t.alt || '';
+    var area = (parent && parent.getAttribute('data-area')) || '';
+    open(t.currentSrc || t.src, t.alt, cap, area);
   }, true);
   document.addEventListener('keydown', function(ev){
     if (ev.key === 'Escape' && root && root.classList.contains('lbx-open')) close();
