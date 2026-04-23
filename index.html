@@ -562,11 +562,19 @@ ul,ol{list-style:none}
 .oferta-sub h5{font-size:.72rem;font-weight:700;color:var(--s800);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .oferta-tags{display:flex;flex-wrap:wrap;gap:4px}
 .oferta-tag{
-  padding:4px 10px;background:var(--s100);border-radius:100px;
-  font-size:.68rem;color:var(--s500);font-weight:500;
-  transition:background var(--dur-fast) var(--ease-smooth),transform var(--dur-fast) var(--ease-spring);
+  display:inline-flex;align-items:center;
+  padding:5px 11px;background:var(--s100);border-radius:100px;
+  font-size:.68rem;color:var(--s700);font-weight:600;
+  text-decoration:none;cursor:pointer;
+  border:1px solid transparent;
+  transition:background var(--dur-fast) var(--ease-smooth),
+             color var(--dur-fast) var(--ease-smooth),
+             transform var(--dur-fast) var(--ease-spring),
+             border-color var(--dur-fast) var(--ease-smooth);
 }
-.oferta-tag:hover{background:var(--b50);color:var(--b600);transform:translateY(-1px)}
+a.oferta-tag:hover{background:var(--b50);color:var(--b700);border-color:rgba(37,99,235,.3);transform:translateY(-1px)}
+a.oferta-tag:active{transform:translateY(0) scale(.97)}
+a.oferta-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 
 /* ============================================================
    ACTIVIDADES
@@ -654,10 +662,17 @@ ul,ol{list-style:none}
 .plan-card h4{font-size:.86rem;font-weight:700;color:var(--s800);margin-bottom:10px}
 .plan-items{display:flex;flex-wrap:wrap;gap:5px}
 .plan-item{
-  padding:5px 10px;background:var(--s100);border-radius:100px;font-size:.7rem;color:var(--s500);
-  transition:background var(--dur-fast),transform var(--dur-fast) var(--ease-spring);
+  display:inline-flex;align-items:center;gap:4px;
+  padding:6px 11px;background:var(--s100);border-radius:100px;
+  font-size:.7rem;color:var(--s700);font-weight:600;
+  text-decoration:none;cursor:pointer;
+  border:1px solid transparent;
+  transition:background var(--dur-fast),color var(--dur-fast),
+             transform var(--dur-fast) var(--ease-spring),border-color var(--dur-fast);
 }
-.plan-item:hover{background:var(--b50);color:var(--b600);transform:translateY(-1px)}
+a.plan-item:hover{background:var(--b50);color:var(--b700);border-color:rgba(37,99,235,.3);transform:translateY(-1px)}
+a.plan-item:active{transform:translateY(0) scale(.97)}
+a.plan-item:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 .plan-coord{font-size:.7rem;color:var(--s400);margin-top:8px;font-style:italic}
 
 /* ============================================================
@@ -669,10 +684,17 @@ ul,ol{list-style:none}
 .select-phase h4{font-size:.84rem;font-weight:700;color:var(--s800);margin-bottom:8px}
 .select-tags{display:flex;flex-wrap:wrap;gap:5px}
 .select-tag{
-  padding:5px 10px;background:var(--s100);border-radius:8px;font-size:.75rem;color:var(--s500);
-  transition:background var(--dur-fast),transform var(--dur-fast) var(--ease-spring);
+  display:inline-flex;align-items:center;gap:4px;
+  padding:6px 11px;background:var(--s100);border-radius:8px;
+  font-size:.75rem;color:var(--s700);font-weight:600;
+  text-decoration:none;cursor:pointer;
+  border:1px solid transparent;
+  transition:background var(--dur-fast),color var(--dur-fast),
+             transform var(--dur-fast) var(--ease-spring),border-color var(--dur-fast);
 }
-.select-tag:hover{background:var(--b50);color:var(--b600);transform:translateY(-1px)}
+a.select-tag:hover{background:var(--b50);color:var(--b700);border-color:rgba(37,99,235,.3);transform:translateY(-1px)}
+a.select-tag:active{transform:translateY(0) scale(.97)}
+a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 
 /* ============================================================
    ENLACES
@@ -848,18 +870,20 @@ ul,ol{list-style:none}
 .lbx-root.lbx-open{opacity:1;pointer-events:auto}
 .lbx-backdrop{position:absolute;inset:0;cursor:zoom-out}
 
-/* Stage — contenedor posicionado absoluto, animado por JS con transform */
+/* Stage — absoluto, transform-only. will-change sólo durante animación. */
 .lbx-stage{
   position:absolute;
   top:0;left:0;
-  width:0;height:0;             /* Dimensiones fijadas por JS (first frame) */
+  width:0;height:0;
   border-radius:14px;
   overflow:hidden;
-  will-change:transform,width,height;
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
   box-shadow:0 48px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.08);
+  contain:layout paint style;
 }
+/* will-change activado solo mientras se anima (controlado por JS via .lbx-animating) */
+.lbx-stage.lbx-animating{will-change:transform,width,height}
 .lbx-img{
   width:100%;height:100%;
   display:block;object-fit:cover;
@@ -1337,7 +1361,8 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <p class="section-desc">Tres etapas adaptadas a cada momento de tu formación académica</p>
   </div>
   <div class="oferta-grid stagger">
-    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/educacion-secundaria-obligatoria.html" target="_blank" rel="noopener" aria-label="Ver información oficial ESO en Junta de Andalucía">
+    <!-- ESO -->
+    <article class="oferta-card fade-up">
       <div class="oferta-top eso"><h3>ESO</h3><p>Educación Secundaria Obligatoria</p></div>
       <div class="oferta-body">
         <ul>
@@ -1347,10 +1372,18 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
           <li>Orientación académica y profesional</li>
           <li>Actividades complementarias</li>
         </ul>
-        <div class="inst-link" style="margin-top:12px">Normativa oficial · Junta</div>
+        <div class="oferta-sub">
+          <h5>Documentos oficiales</h5>
+          <div class="oferta-tags">
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/sites/default/files/2022-08/04082022_orden_desarrolla_curriculo_ESO_1.pdf" target="_blank" rel="noopener">📄 Orden currículo ESO (PDF)</a>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/boja/2023/90/3" target="_blank" rel="noopener">📄 Decreto 102/2023 ESO (BOJA)</a>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/educacion-secundaria-obligatoria.html" target="_blank" rel="noopener">🔗 Portal ESO Junta</a>
+          </div>
+        </div>
       </div>
-    </a>
-    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/bachillerato.html" target="_blank" rel="noopener" aria-label="Ver información oficial Bachillerato en Junta de Andalucía">
+    </article>
+    <!-- Bachillerato -->
+    <article class="oferta-card fade-up">
       <div class="oferta-top bach"><h3>Bachillerato</h3><p>Preparación para la universidad</p></div>
       <div class="oferta-body">
         <ul>
@@ -1362,31 +1395,21 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
         <div class="oferta-sub">
           <h5>Ciencias y Tecnología</h5>
           <div class="oferta-tags">
-            <span class="oferta-tag">Itinerario Salud</span>
-            <span class="oferta-tag">Itinerario Tecnología</span>
-            <span class="oferta-tag">Matemáticas II</span>
-            <span class="oferta-tag">Biología</span>
-            <span class="oferta-tag">Física</span>
-            <span class="oferta-tag">Química</span>
-            <span class="oferta-tag">Dibujo Técnico</span>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/educacion/portals/abaco-portlet/content/b0177934-214e-4fef-9e1a-2d9e09914eea" target="_blank" rel="noopener">📄 Distribución materias Bach. Ciencias</a>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/boja/2023/90/4" target="_blank" rel="noopener">📄 Decreto 103/2023 Bach. (BOJA)</a>
           </div>
         </div>
         <div class="oferta-sub">
           <h5>Humanidades y CC.SS.</h5>
           <div class="oferta-tags">
-            <span class="oferta-tag">Itinerario Sociales</span>
-            <span class="oferta-tag">Itinerario Humanidades</span>
-            <span class="oferta-tag">Mat. Aplicadas</span>
-            <span class="oferta-tag">Latín II</span>
-            <span class="oferta-tag">Empresa</span>
-            <span class="oferta-tag">Geografía</span>
-            <span class="oferta-tag">H.ª del Arte</span>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/boja/2023/90/4" target="_blank" rel="noopener">📄 Currículo Bach. Humanidades (BOJA)</a>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/bachillerato.html" target="_blank" rel="noopener">🔗 Portal Bachillerato Junta</a>
           </div>
         </div>
-        <div class="inst-link" style="margin-top:12px">Normativa oficial · Junta</div>
       </div>
-    </a>
-    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/formacion-profesional-andaluza/docentes/fp-basica/detalle-titulo?idTitulo=145" target="_blank" rel="noopener" aria-label="Ver ficha oficial del ciclo Profesional Básico en Electricidad y Electrónica — Junta de Andalucía">
+    </article>
+    <!-- FPB Electricidad -->
+    <article class="oferta-card fade-up">
       <div class="oferta-top fpb"><h3>FPB Electricidad</h3><p>Formación Profesional Básica</p></div>
       <div class="oferta-body">
         <ul>
@@ -1397,20 +1420,16 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
           <li>Acceso a Grado Medio</li>
         </ul>
         <div class="oferta-sub">
-          <h5>Módulos principales</h5>
+          <h5>Currículo oficial del título</h5>
           <div class="oferta-tags">
-            <span class="oferta-tag">Instalaciones</span>
-            <span class="oferta-tag">Interpretación de planos</span>
-            <span class="oferta-tag">PRL</span>
-            <span class="oferta-tag">Comunicación</span>
-            <span class="oferta-tag">Ciencias aplicadas</span>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/educacion/portals/delegate/content/4ae88676-87a1-4232-a4ae-57963bc1df00/Anexo%20II%20-%20Curr%C3%ADculo%20Electricidad%20y%20electr%C3%B3nica" target="_blank" rel="noopener">📄 Anexo II · Currículo Electricidad (PDF)</a>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/educacion/portals/web/formacion-profesional-andaluza/docentes/fp-basica/detalle-titulo?idTitulo=145" target="_blank" rel="noopener">🔗 Ficha oficial del título</a>
           </div>
         </div>
-        <div class="inst-link" style="margin-top:12px">Normativa oficial · Junta</div>
       </div>
-    </a>
-    <!-- V22 — NUEVA ETAPA: Aula FBO (Formación Básica Obligatoria) -->
-    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/educacion-especial.html" target="_blank" rel="noopener" aria-label="Ver información oficial Educación Especial y Aula FBO en Junta de Andalucía">
+    </article>
+    <!-- Aula FBO -->
+    <article class="oferta-card fade-up">
       <div class="oferta-top fbo"><h3>Aula FBO</h3><p>Formación Básica Obligatoria</p></div>
       <div class="oferta-body">
         <ul>
@@ -1421,18 +1440,14 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
           <li>Adaptaciones curriculares significativas</li>
         </ul>
         <div class="oferta-sub">
-          <h5>Ámbitos de trabajo</h5>
+          <h5>Documentación FBO · Educación Especial</h5>
           <div class="oferta-tags">
-            <span class="oferta-tag">Autonomía</span>
-            <span class="oferta-tag">Comunicación</span>
-            <span class="oferta-tag">Matemática funcional</span>
-            <span class="oferta-tag">Habilidades sociales</span>
-            <span class="oferta-tag">Taller ocupacional</span>
+            <a class="oferta-tag" href="https://blogsaverroes.juntadeandalucia.es/salonvirtualdelestudiante/files/2022/01/FBO.pdf" target="_blank" rel="noopener">📄 Guía FBO (PDF Junta)</a>
+            <a class="oferta-tag" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/educacion-especial.html" target="_blank" rel="noopener">🔗 Portal Educación Especial</a>
           </div>
         </div>
-        <div class="inst-link" style="margin-top:12px">Educación Especial · Junta</div>
       </div>
-    </a>
+    </article>
   </div>
 </section>
 
@@ -1581,42 +1596,48 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
        redundantes, respetando el DOM original de la sección Instalaciones. -->
   <div class="inst-list stagger" style="margin-top:20px">
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">📚</div><div><div class="inst-name">Biblioteca</div><div class="inst-desc">Sala de lectura, consulta y estudio con recursos digitales</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">📚</div><div><div class="inst-name">Biblioteca</div><div class="inst-desc">Dpto. Lengua · Plan de Bibliotecas Escolares</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
     </details>
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🔬</div><div><div class="inst-name">Laboratorio</div><div class="inst-desc">Prácticas de Física, Química y Biología</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">🔬</div><div><div class="inst-name">Laboratorio</div><div class="inst-desc">Dptos. Física, Química y Biología</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
     </details>
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">💻</div><div><div class="inst-name">Aula TIC</div><div class="inst-desc">Sala de informática con ordenadores</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">💻</div><div><div class="inst-name">Aula TIC</div><div class="inst-desc">Dpto. Informática · TDE</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/tic.jpg" alt="Aula TIC" loading="lazy" data-caption="Aula TIC — equipamiento informático">
+        <img src="img/galeria/tic.jpg" alt="Aula TIC" loading="lazy" data-caption="Aula TIC · Dpto. Informática">
         <img src="img/galeria/tic-aula.jpg" alt="Aula TIC — vista del aula" loading="lazy" data-caption="Aula TIC — vista del aula">
       </div>
     </details>
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🎨</div><div><div class="inst-name">Aula de Dibujo</div><div class="inst-desc">Expresión artística y dibujo técnico</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">🎨</div><div><div class="inst-name">Aula de Dibujo</div><div class="inst-desc">Dpto. Dibujo y Expresión Plástica</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/dibujo.jpg" alt="Aula de Dibujo y Expresión Plástica" loading="lazy" data-caption="Aula de Dibujo y Expresión Plástica">
-        <img src="img/galeria/dibujo-2.jpg" alt="Trabajos artísticos del alumnado" loading="lazy" data-caption="Trabajos artísticos del alumnado">
+        <img src="img/galeria/dibujo.jpg" alt="Aula de Dibujo" loading="lazy" data-caption="Aula de Dibujo · Dpto. EPV">
+        <img src="img/galeria/dibujo-2.jpg" alt="Trabajos artísticos" loading="lazy" data-caption="Trabajos artísticos del alumnado">
       </div>
     </details>
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🔧</div><div><div class="inst-name">Aula de Tecnología</div><div class="inst-desc">Taller para proyectos y prácticas de FPB</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">🔧</div><div><div class="inst-name">Taller de Tecnología / FPB</div><div class="inst-desc">Dpto. Tecnología · FPB Electricidad y Electrónica</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/fp-electricidad.jpg" alt="FP Básica de Electricidad — taller" loading="lazy" data-caption="FP Básica de Electricidad — taller">
-        <img src="img/galeria/fp-instalacion.jpg" alt="FP Básica — prácticas de instalación" loading="lazy" data-caption="FP Básica — prácticas de instalación">
+        <img src="img/galeria/fp-electricidad.jpg" alt="Taller FPB Electricidad" loading="lazy" data-caption="Taller FPB Electricidad · Dpto. Tecnología">
+        <img src="img/galeria/fp-instalacion.jpg" alt="Prácticas de instalación FPB" loading="lazy" data-caption="Prácticas de instalación eléctrica">
       </div>
     </details>
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🎵</div><div><div class="inst-name">Aula de Música</div><div class="inst-desc">Ensayos y producciones teatrales</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">🎵</div><div><div class="inst-name">Aula de Música</div><div class="inst-desc">Dpto. Música · Ensayos, coro y piano</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/sum.jpg" alt="Salón de Usos Múltiples — producciones" loading="lazy" data-caption="Salón de Usos Múltiples (SUM) — producciones musicales">
+        <img src="img/galeria/musica.jpg" alt="Aula de Música — Dpto. Música" loading="lazy" data-caption="Aula de Música · Dpto. de Música">
       </div>
     </details>
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🏀</div><div><div class="inst-name">Pistas deportivas</div><div class="inst-desc">Baloncesto, fútbol sala y espacio cubierto</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">🎭</div><div><div class="inst-name">SUM · Salón de Usos Múltiples</div><div class="inst-desc">Producciones teatrales dirigidas por Jorge Illanes</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/gimnasio.jpg" alt="Gimnasio del centro" loading="lazy" data-caption="Gimnasio del centro">
+        <img src="img/galeria/sum.jpg" alt="Salón de Usos Múltiples (SUM)" loading="lazy" data-caption="SUM — Salón de Usos Múltiples · Producciones teatrales">
+      </div>
+    </details>
+    <details class="inst-item fade-up">
+      <summary><div class="inst-icon">🏋️</div><div><div class="inst-name">Gimnasio</div><div class="inst-desc">Dpto. Ed. Física · Espacio cubierto para prácticas deportivas</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <div class="inst-gal">
+        <img src="img/galeria/gimnasio.jpg" alt="Gimnasio del centro" loading="lazy" data-caption="Gimnasio · Dpto. de Educación Física">
         <img src="img/galeria/gimnasio-2.jpg" alt="Gimnasio — interior" loading="lazy" data-caption="Gimnasio — interior">
         <img src="img/galeria/gimnasio-3.jpg" alt="Gimnasio — zona deportiva" loading="lazy" data-caption="Gimnasio — zona deportiva">
       </div>
@@ -1638,11 +1659,10 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
       </div>
     </details>
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🌱</div><div><div class="inst-name">Huerto escolar</div><div class="inst-desc">Proyecto Aldea — educación ambiental</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">🌱</div><div><div class="inst-name">Huerto escolar</div><div class="inst-desc">Dpto. Biología · Proyecto ALDEA (educación ambiental)</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/huerto.jpg" alt="Huerto escolar — Proyecto Aldea" loading="lazy" data-caption="Huerto escolar — Proyecto Aldea">
-        <img src="img/galeria/huerto-2.jpg" alt="Huerto escolar — zona de cultivo" loading="lazy" data-caption="Huerto escolar — zona de cultivo">
-        <img src="img/galeria/proyecto-aldea.png" alt="Proyecto Aldea — logo" loading="lazy" data-caption="Proyecto Aldea · IES Arcelacis">
+        <img src="img/galeria/huerto.jpg" alt="Huerto escolar" loading="lazy" data-caption="Huerto escolar · Dpto. Biología">
+        <img src="img/galeria/huerto-2.jpg" alt="Huerto — zona de cultivo" loading="lazy" data-caption="Huerto — zona de cultivo">
       </div>
     </details>
     <details class="inst-item fade-up">
@@ -1677,52 +1697,40 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <p class="section-desc">Iniciativas activas para enriquecer la experiencia educativa</p>
   </div>
   <div class="plan-grid stagger">
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portales/web/lecturas-bibliotecas-escolares/lectura" target="_blank" rel="noopener" aria-label="Ver planes de Participación y Oficio en Junta de Andalucía">
+    <!-- Participación y oficio — cada píldora → PDF oficial -->
+    <article class="plan-card fade-up">
       <h4>Participación y oficio</h4>
       <div class="plan-items">
-        <span class="plan-item">Bibliotecas Escolares</span>
-        <span class="plan-item">Bienestar Emocional</span>
-        <span class="plan-item">Plan de Igualdad</span>
-        <span class="plan-item">TDE</span>
-        <span class="plan-item">Prevención de Riesgos</span>
-        <span class="plan-item">Compensación Educativa</span>
+        <a class="plan-item" href="https://blogsaverroes.juntadeandalucia.es/entresierras/files/2025/10/PLAN-DE-TRABAJO-DE-LA-BIBLIOTECA-ESCOLAR-2025-2026.pdf" target="_blank" rel="noopener">📄 Bibliotecas Escolares</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/sites/default/files/2023-10/Resolucion%20Programa%20Bienestar%20Emocional%202023%202024%28F%29.pdf" target="_blank" rel="noopener">📄 Bienestar Emocional</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portales/documents/270701/2467231/Resoluci%C3%B3n%20de%20Convocatoria%20de%20PVG%202025_2026(F).pdf/13c302ef-19a1-b676-3d35-2babe70602bd" target="_blank" rel="noopener">📄 Plan de Igualdad</a>
+        <a class="plan-item" href="https://blogsaverroes.juntadeandalucia.es/iessanalvaro/files/2025/05/Plan_TDE_2024-25.pdf" target="_blank" rel="noopener">📄 TDE</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portals/web/transformacion-digital-educativa/contenidos/-/contenidos/detalle/tde_guias_para_la_elaboracion_del_pad" target="_blank" rel="noopener">📄 Guía PAD TDE</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portales/web/lecturas-bibliotecas-escolares/lectura" target="_blank" rel="noopener">🔗 Portal Lectura y BBEE</a>
       </div>
-      <div class="plan-coord">Coordinadores: Caridad Jiménez · Aroa Meana · Mónica Gálvez</div>
-      <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-        <a href="https://www.juntadeandalucia.es/educacion/portales/web/lecturas-bibliotecas-escolares/lectura" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Bibliotecas Escolares · Junta</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portales/web/planes-y-programas/programas-desarrollo-educativo/bienestar-emocional/presentacion" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Bienestar Emocional · Junta</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portales/web/igualdad/iii-plan-de-igualdad-de-genero-en-educacion-2024-2028" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">III Plan de Igualdad 2024–28 · Junta</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portals/web/transformacion-digital-educativa" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Transformación Digital Educativa (TDE) · Junta</a>
-      </div>
-    </a>
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portales/web/convivencia-escolar/red-escuela-espacio-de-paz" target="_blank" rel="noopener" aria-label="Ver Convocatoria General de Planes en Junta de Andalucía">
+      <div class="plan-coord">Coordinadoras: Caridad Jiménez · Aroa Meana · Mónica Gálvez</div>
+    </article>
+    <!-- Convocatoria general — cada píldora → PDF/Portal oficial -->
+    <article class="plan-card fade-up">
       <h4>Convocatoria general</h4>
       <div class="plan-items">
-        <span class="plan-item">Red Espacio de Paz</span>
-        <span class="plan-item">Proyecto Aldea</span>
-        <span class="plan-item">Hábitos vida saludable</span>
-        <span class="plan-item">Prácticum Grado Maestro</span>
-        <span class="plan-item">Prácticum Secundaria</span>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/sites/default/files/2025-03/Resoluci%C3%B3n%20convocatoria%20ADA_ConRed%2024_25%28F%29.pdf" target="_blank" rel="noopener">📄 Red Espacio de Paz</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portals/delegate/content/ebde0373-fecc-4d8a-9e1f-f9642e1a594b/Dossier_17_18%20(DEF_Dossier%20_ALDEA_27_08_2017.pdf)" target="_blank" rel="noopener">📄 Proyecto Aldea · Dossier</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portales/documents/270701/2467231/Resolucio%C2%BFn%20Convocatoria%20Ecoescuelas%2025_26(F).pdf/26721150-43eb-3314-6810-39771c331333" target="_blank" rel="noopener">📄 Aldea · Ecoescuelas 25/26</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/eaprendizaje/wp-content/uploads/2026/01/Guia-Habitos-de-Vida-Saludable.pdf" target="_blank" rel="noopener">📄 Hábitos Vida Saludable</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portals/delegate/content/d6df4365-7c6c-4dd6-a0a3-9432aa0fb7f8/Versi%C3%B3n%20reducida%20Forma%20Joven%20(Versi%C3%B3n%20reducida%20FOJO%20AE_DEF.pdf)" target="_blank" rel="noopener">📄 Forma Joven</a>
       </div>
-      <div class="plan-coord">Coordinadores: M.ª Dolores Graciano · M.ª Dolores García · Aroa Meana</div>
-      <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-        <a href="https://www.juntadeandalucia.es/educacion/portales/web/convivencia-escolar/red-escuela-espacio-de-paz" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Red Escuela Espacio de Paz · Junta</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portales/web/planes-y-programas/w/educacion-ambiental-para-la-sostenibilidad-aldea-" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Proyecto ALDEA · Junta</a>
-        <a href="https://www.juntadeandalucia.es/educacion/eaprendizaje/habitos-de-vida-saludable/" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Hábitos de Vida Saludable · Junta</a>
-      </div>
-    </a>
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portales/documents/270701/2467231/Instrucciones_ZTS_25_26_V.4(F).pdf/d8bbefdf-e697-83ff-630b-8157df67878d" target="_blank" rel="noopener" aria-label="Ver Convocatoria Específica de Planes en Junta de Andalucía">
+      <div class="plan-coord">Coordinadoras: M.ª Dolores Graciano · M.ª Dolores García · Aroa Meana</div>
+    </article>
+    <!-- Convocatoria específica — píldoras con PDFs oficiales -->
+    <article class="plan-card fade-up">
       <h4>Convocatoria específica</h4>
       <div class="plan-items">
-        <span class="plan-item">Programa Atención ZTS</span>
-        <span class="plan-item">Más Equidad 2025</span>
-        <span class="plan-item">Aulas Verdes Abiertas 2025</span>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portales/documents/270701/2467231/Instrucciones_ZTS_25_26_V.4(F).pdf/d8bbefdf-e697-83ff-630b-8157df67878d" target="_blank" rel="noopener">📄 Programa Atención ZTS 25/26</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portales/documents/270701/2467231/Instrucciones_ZTS_25_26_V.4(F).pdf/d8bbefdf-e697-83ff-630b-8157df67878d" target="_blank" rel="noopener">📄 Más Equidad 2025</a>
+        <a class="plan-item" href="https://www.juntadeandalucia.es/educacion/portals/delegate/content/cc460ccb-7a51-450e-a446-b52e5401469b/Convocatoria%20Aulas%20Verdes%20Abiertas" target="_blank" rel="noopener">📄 Aulas Verdes Abiertas 2025</a>
       </div>
-      <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-        <a href="https://www.juntadeandalucia.es/educacion/portales/documents/270701/2467231/Instrucciones_ZTS_25_26_V.4(F).pdf/d8bbefdf-e697-83ff-630b-8157df67878d" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">PDF · Instrucciones ZTS 2025/26 (Junta)</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portals/delegate/content/cc460ccb-7a51-450e-a446-b52e5401469b/Convocatoria%20Aulas%20Verdes%20Abiertas" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">PDF · Convocatoria Aulas Verdes Abiertas (Junta)</a>
-      </div>
-    </a>
+    </article>
   </div>
 </section>
 
@@ -1733,43 +1741,37 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <h2 class="section-title">Selectividad</h2>
     <p class="section-desc">Estructura de las pruebas de acceso</p>
   </div>
-  <a class="select-card fade-up card-link" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_procedimiento_acceso.php" target="_blank" rel="noopener" aria-label="Ver PEvAU/Selectividad — Distrito Único Andaluz">
+  <article class="select-card fade-up">
     <div class="select-phase">
       <h4>Fase obligatoria</h4>
       <div class="select-tags">
-        <span class="select-tag">Lengua Castellana y Literatura II</span>
-        <span class="select-tag">Inglés</span>
-        <span class="select-tag">Francés</span>
-        <span class="select-tag">Matemáticas II</span>
-        <span class="select-tag">Mat. Aplicadas CC.SS. II</span>
-        <span class="select-tag">Latín II</span>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Lengua Castellana y Lit. II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Inglés</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Francés</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Matemáticas II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Mat. Aplicadas CC.SS. II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Latín II</a>
       </div>
     </div>
     <div class="select-phase">
       <h4>Fase voluntaria — Ciencias</h4>
       <div class="select-tags">
-        <span class="select-tag">Biología</span>
-        <span class="select-tag">Física</span>
-        <span class="select-tag">Química</span>
-        <span class="select-tag">Dibujo Técnico</span>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Biología</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Física</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Química</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Dibujo Técnico</a>
       </div>
     </div>
     <div class="select-phase">
       <h4>Fase voluntaria — Humanidades y CC.SS.</h4>
       <div class="select-tags">
-        <span class="select-tag">Empresa y Modelos de Negocio</span>
-        <span class="select-tag">Geografía</span>
-        <span class="select-tag">Griego II</span>
-        <span class="select-tag">Historia del Arte</span>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Empresa y Modelos de Negocio</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Geografía</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Griego II</a>
+        <a class="select-tag" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener">📄 Historia del Arte</a>
       </div>
     </div>
-    <div class="select-phase" style="display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px;border-top:1px solid var(--s200)">
-      <a href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=mapa" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Distrito Único Andaluz · Acceso universidad</a>
-      <a href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_procedimiento_acceso.php" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Procedimiento PEvAU (estructura pruebas)</a>
-      <a href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_parametros_top.php" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Parámetros de ponderación por grado/universidad</a>
-      <a href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">PDF · Parámetros Ponderación 2024/25 (DUA)</a>
-    </div>
-  </a>
+  </article>
 </section>
 
 <!-- ENLACES ÚTILES -->
@@ -2385,35 +2387,51 @@ if ('serviceWorker' in navigator) {
   var root, stage, img, caption, badgeEl, captionText, closeBtn;
   var currentSrcEl = null, lastFocus = null, rafId = null, isOpen = false;
 
-  /* ── Spring integrator (semi-implicit Euler) ───────────────────── */
+  /* ── Spring integrator (semi-implicit Euler, fixed-step 60Hz) ──────
+     Framer Motion equivalente: { type:"spring", bounce:0.2, duration:0.4 }
+     Mapeo: bounce=0.2 → damping ratio ≈ 0.8; duration=0.4s → stiffness≈400.
+     Config final: stiffness 400, damping 30, mass 0.5 (bounce elástico ligero)
+  */
   function spring(from, to, cfg, onUpdate, onComplete){
-    var stiffness = cfg.stiffness || 320;
-    var damping   = cfg.damping   || 26;
-    var mass      = cfg.mass      || 0.7;
-    var precision = cfg.precision || 0.02;
+    var stiffness = cfg.stiffness || 400;
+    var damping   = cfg.damping   || 30;
+    var mass      = cfg.mass      || 0.5;
+    var precision = cfg.precision || 0.15;     // más laxo → asienta más rápido
+    var vprec     = cfg.vPrecision || 0.8;
 
-    var state = from.map(function(v,i){
-      return { x:v, v:0, target:to[i] };
-    });
+    var n = from.length;
+    var xs = new Float64Array(n), vs = new Float64Array(n), ts = new Float64Array(n);
+    for (var i=0;i<n;i++){ xs[i]=from[i]; ts[i]=to[i]; }
+
     var last = performance.now();
+    var accumulator = 0;
+    var fixedStep = 1/180;                      // 180Hz fijos → estabilidad, sin drops
+    var buf = new Array(n);
     var id;
+
     function frame(now){
-      var dt = Math.min((now - last) / 1000, 1/30); // cap at 30fps min (avoid huge dt)
+      var dt = (now - last) / 1000;
       last = now;
+      if (dt > 0.1) dt = 0.1;                   // tab inactivo → no teleport
+      accumulator += dt;
+
       var settled = true;
-      var values = new Array(state.length);
-      for (var i=0; i<state.length; i++){
-        var s = state[i];
-        var force   = -stiffness * (s.x - s.target);
-        var damper  = -damping   * s.v;
-        var accel   = (force + damper) / mass;
-        s.v += accel * dt;
-        s.x += s.v   * dt;
-        if (Math.abs(s.v) > precision || Math.abs(s.x - s.target) > precision) settled = false;
-        values[i] = s.x;
+      while (accumulator >= fixedStep){
+        accumulator -= fixedStep;
+        for (var j=0;j<n;j++){
+          var force  = -stiffness * (xs[j] - ts[j]);
+          var damper = -damping   * vs[j];
+          var a = (force + damper) / mass;
+          vs[j] += a * fixedStep;
+          xs[j] += vs[j] * fixedStep;
+        }
       }
-      onUpdate(values);
-      if (!settled) {
+      for (var k=0;k<n;k++){
+        buf[k] = xs[k];
+        if (Math.abs(vs[k]) > vprec || Math.abs(xs[k]-ts[k]) > precision) settled = false;
+      }
+      onUpdate(buf);
+      if (!settled){
         id = requestAnimationFrame(frame);
       } else {
         onUpdate(to.slice());
@@ -2500,16 +2518,18 @@ if ('serviceWorker' in navigator) {
       var natW = img.naturalWidth  || rect.width;
       var natH = img.naturalHeight || rect.height;
       var target = computeTargetRect(natW, natH);
+      stage.classList.add('lbx-animating');     // will-change ON
       spring(
         [rect.left, rect.top, rect.width, rect.height],
         [target.x, target.y, target.w, target.h],
-        { stiffness: 320, damping: 26, mass: 0.7 },
+        { stiffness: 400, damping: 30, mass: 0.5 },   // bounce:0.2, duration:0.4
         function(v){
           stage.style.width  = v[2] + 'px';
           stage.style.height = v[3] + 'px';
           stage.style.transform = 'translate3d(' + v[0] + 'px,' + v[1] + 'px,0)';
         },
         function(){
+          stage.classList.remove('lbx-animating');    // will-change OFF (libera GPU)
           if (closeBtn) closeBtn.focus();
         }
       );
@@ -2533,25 +2553,26 @@ if ('serviceWorker' in navigator) {
       target = [vw/2, vh/2, 0, 0];
     }
 
-    /* Fade out backdrop + UI (CSS) at the same time as FLIP */
+    /* Fade out backdrop + UI (CSS) al mismo tiempo que el FLIP inverso */
     root.classList.remove('lbx-open');
     root.setAttribute('aria-hidden','true');
+    stage.classList.add('lbx-animating');
 
     spring(
       [stageRect.left, stageRect.top, stageRect.width, stageRect.height],
       target,
-      { stiffness: 360, damping: 30, mass: 0.6 },
+      { stiffness: 500, damping: 36, mass: 0.45 },   // cierre más snappy
       function(v){
         stage.style.width  = v[2] + 'px';
         stage.style.height = v[3] + 'px';
         stage.style.transform = 'translate3d(' + v[0] + 'px,' + v[1] + 'px,0)';
       },
       function(){
+        stage.classList.remove('lbx-animating');
         if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
         document.body.classList.remove('lbx-locked');
         img.src = '';
-        stage.style.transform = '';
-        stage.style.width = stage.style.height = '';
+        stage.style.cssText = '';
         currentSrcEl = null;
         if (lastFocus && lastFocus.focus) lastFocus.focus();
       }
