@@ -832,88 +832,61 @@ ul,ol{list-style:none}
    con clase .lightbox-src. Oscurecimiento total + backdrop-blur intenso
    + scale elástico. Accesible (Escape para cerrar, aria-modal).
    ═══════════════════════════════════════════════════════════════════ */
-/* ── LIGHTBOX PREMIUM v3 — Spring physics ─────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHTBOX v4 — FLIP technique (Framer Motion layoutId equivalent)
+   60fps real · sólo transform/opacity (GPU) · sin reflows
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Backdrop — anima SOLO opacity (no backdrop-filter, que causa lag) */
 .lbx-root{
   position:fixed;inset:0;z-index:100000;
-  display:flex;align-items:center;justify-content:center;
-  padding:24px;
-  background:rgba(4,8,20,.0);
-  backdrop-filter:blur(0px) saturate(1);-webkit-backdrop-filter:blur(0px) saturate(1);
+  background:rgba(4,8,20,.94);
   opacity:0;pointer-events:none;
-  transition:
-    opacity 280ms cubic-bezier(.4,0,.2,1),
-    background 280ms cubic-bezier(.4,0,.2,1),
-    backdrop-filter 280ms cubic-bezier(.4,0,.2,1);
+  transition:opacity 260ms cubic-bezier(.4,0,.2,1);
+  contain:strict;
 }
-.lbx-root.lbx-open{
-  opacity:1;pointer-events:auto;
-  background:rgba(4,8,20,.88);
-  backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);
-}
+.lbx-root.lbx-open{opacity:1;pointer-events:auto}
 .lbx-backdrop{position:absolute;inset:0;cursor:zoom-out}
 
-/* Spring entrance — stiffness≈320, damping≈20 via cubic-bezier(.34,1.56,.64,1) */
+/* Stage — contenedor posicionado absoluto, animado por JS con transform */
 .lbx-stage{
-  position:relative;max-width:min(1200px,94vw);max-height:88vh;
-  display:flex;align-items:center;justify-content:center;
-  transform:scale(.64) translateY(40px);
-  opacity:0;
-  transition:
-    transform 540ms cubic-bezier(.34,1.56,.64,1),
-    opacity   280ms cubic-bezier(.4,0,.2,1);
-  will-change:transform,opacity;
+  position:absolute;
+  top:0;left:0;
+  width:0;height:0;             /* Dimensiones fijadas por JS (first frame) */
+  border-radius:14px;
+  overflow:hidden;
+  will-change:transform,width,height;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  box-shadow:0 48px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.08);
 }
-.lbx-root.lbx-open .lbx-stage{
-  transform:scale(1) translateY(0);opacity:1;
-}
-/* Closing spring — snappy collapse */
-.lbx-root.lbx-closing .lbx-stage{
-  transform:scale(.82) translateY(24px);opacity:0;
-  transition:
-    transform 280ms cubic-bezier(.4,0,.2,1),
-    opacity   200ms cubic-bezier(.4,0,.2,1);
-}
-
 .lbx-img{
-  max-width:100%;max-height:88vh;display:block;border-radius:16px;
-  box-shadow:
-    0 48px 100px rgba(0,0,0,.62),
-    0 0 0 1px rgba(255,255,255,.09),
-    0 0 80px rgba(59,130,246,.12);
-  background:#0f172a;object-fit:contain;
+  width:100%;height:100%;
+  display:block;object-fit:cover;
+  transform:translate3d(0,0,0);
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
 }
+.lbx-root.lbx-open .lbx-img{object-fit:contain;background:#0f172a}
 
-/* Badge area (injected via JS if data-area present) */
-.lbx-badge{
-  position:absolute;top:-44px;left:0;
-  display:inline-flex;align-items:center;gap:6px;
-  padding:4px 12px;
-  background:rgba(59,130,246,.18);border:1px solid rgba(59,130,246,.28);
-  border-radius:100px;color:#93c5fd;font-size:.7rem;font-weight:600;
-  letter-spacing:.04em;text-transform:uppercase;
-  opacity:0;transform:translateY(6px);
-  transition:opacity 300ms ease 120ms,transform 300ms cubic-bezier(.34,1.44,.64,1) 120ms;
-}
-.lbx-root.lbx-open .lbx-badge{opacity:1;transform:translateY(0)}
+/* Source hidden while animating (evita duplicación visual) */
+.lbx-src-hidden{visibility:hidden}
 
-.lbx-caption{
-  position:absolute;left:0;right:0;bottom:-52px;
-  text-align:center;color:rgba(226,232,240,.8);
-  font-size:.9rem;font-weight:500;letter-spacing:.01em;
-  text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none;
-  opacity:0;transform:translateY(8px);
-  transition:opacity 300ms ease 80ms,transform 300ms cubic-bezier(.34,1.44,.64,1) 80ms;
-}
-.lbx-root.lbx-open .lbx-caption{opacity:1;transform:translateY(0)}
-
+/* Close button — sale cuando abre, entra cuando expande */
 .lbx-close{
-  position:absolute;top:-52px;right:-4px;width:44px;height:44px;
-  border-radius:50%;background:rgba(15,23,42,.72);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.14);color:#f8fafc;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  transition:background 180ms ease,transform 260ms cubic-bezier(.34,1.56,.64,1),border-color 180ms ease;
-  font-size:0;line-height:0;
+  position:fixed;top:18px;right:18px;
+  width:46px;height:46px;border-radius:50%;
+  background:rgba(15,23,42,.8);
+  border:1px solid rgba(255,255,255,.14);
+  color:#f8fafc;z-index:100001;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  opacity:0;transform:scale(.7) rotate(-45deg);
+  transition:
+    opacity 220ms cubic-bezier(.4,0,.2,1) 260ms,
+    transform 340ms cubic-bezier(.34,1.56,.64,1) 260ms,
+    background 180ms ease;
+  font-size:0;
 }
 .lbx-close::before,.lbx-close::after{
   content:"";position:absolute;width:18px;height:2px;
@@ -922,18 +895,50 @@ ul,ol{list-style:none}
 }
 .lbx-close::before{transform:rotate(45deg)}
 .lbx-close::after{transform:rotate(-45deg)}
-.lbx-close:hover{background:rgba(59,130,246,.85);transform:scale(1.12) rotate(90deg);border-color:rgba(147,197,253,.5)}
-.lbx-close:active{transform:scale(.9) rotate(90deg)}
+.lbx-root.lbx-open .lbx-close{opacity:1;transform:scale(1) rotate(0)}
+.lbx-close:hover{background:rgba(59,130,246,.9)}
+.lbx-close:active{transform:scale(.92) rotate(0)}
 .lbx-close:focus-visible{outline:2px solid #60a5fa;outline-offset:3px}
 
-img[data-lightbox]{cursor:zoom-in;transition:transform var(--dur-mid) var(--ease-smooth),filter var(--dur-mid) var(--ease-smooth)}
+/* Caption + badge — overlay premium */
+.lbx-caption{
+  position:fixed;left:50%;bottom:28px;
+  transform:translate3d(-50%,12px,0);
+  max-width:min(92vw,880px);
+  padding:8px 18px;
+  background:rgba(15,23,42,.72);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:100px;
+  color:#e2e8f0;font-size:.88rem;font-weight:500;
+  text-align:center;
+  opacity:0;z-index:100001;pointer-events:none;
+  transition:
+    opacity 260ms cubic-bezier(.4,0,.2,1) 280ms,
+    transform 380ms cubic-bezier(.34,1.56,.64,1) 280ms;
+}
+.lbx-root.lbx-open .lbx-caption{opacity:1;transform:translate3d(-50%,0,0)}
+
+.lbx-badge{
+  display:inline-block;margin-right:10px;
+  padding:2px 10px;
+  background:rgba(59,130,246,.22);border:1px solid rgba(59,130,246,.34);
+  border-radius:100px;color:#93c5fd;
+  font-size:.68rem;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;
+  vertical-align:middle;
+}
+
+img[data-lightbox]{cursor:zoom-in}
 body.lbx-locked{overflow:hidden}
 
+/* Respect reduced motion */
+@media (prefers-reduced-motion:reduce){
+  .lbx-root,.lbx-stage,.lbx-close,.lbx-caption{transition-duration:.01ms!important}
+}
+
 @media (max-width:640px){
-  .lbx-close{top:-48px;right:0;width:40px;height:40px}
-  .lbx-caption{bottom:-44px;font-size:.82rem}
-  .lbx-stage{max-width:96vw;max-height:80vh}
-  .lbx-img{max-height:80vh;border-radius:10px}
+  .lbx-close{top:12px;right:12px;width:42px;height:42px}
+  .lbx-caption{bottom:18px;font-size:.8rem;padding:6px 14px}
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -1332,7 +1337,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <p class="section-desc">Tres etapas adaptadas a cada momento de tu formación académica</p>
   </div>
   <div class="oferta-grid stagger">
-    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ordenacion/ensenanza-eso.html" target="_blank" rel="noopener" aria-label="Ver información oficial ESO en Junta de Andalucía">
+    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/educacion-secundaria-obligatoria.html" target="_blank" rel="noopener" aria-label="Ver información oficial ESO en Junta de Andalucía">
       <div class="oferta-top eso"><h3>ESO</h3><p>Educación Secundaria Obligatoria</p></div>
       <div class="oferta-body">
         <ul>
@@ -1345,7 +1350,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
         <div class="inst-link" style="margin-top:12px">Normativa oficial · Junta</div>
       </div>
     </a>
-    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ordenacion/ensenanza-bachillerato.html" target="_blank" rel="noopener" aria-label="Ver información oficial Bachillerato en Junta de Andalucía">
+    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/bachillerato.html" target="_blank" rel="noopener" aria-label="Ver información oficial Bachillerato en Junta de Andalucía">
       <div class="oferta-top bach"><h3>Bachillerato</h3><p>Preparación para la universidad</p></div>
       <div class="oferta-body">
         <ul>
@@ -1381,7 +1386,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
         <div class="inst-link" style="margin-top:12px">Normativa oficial · Junta</div>
       </div>
     </a>
-    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/formacion-profesional/fpb.html" target="_blank" rel="noopener" aria-label="Ver información oficial FP Básica en Junta de Andalucía">
+    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/formacion-profesional-andaluza/docentes/fp-basica/detalle-titulo?idTitulo=145" target="_blank" rel="noopener" aria-label="Ver ficha oficial del ciclo Profesional Básico en Electricidad y Electrónica — Junta de Andalucía">
       <div class="oferta-top fpb"><h3>FPB Electricidad</h3><p>Formación Profesional Básica</p></div>
       <div class="oferta-body">
         <ul>
@@ -1405,7 +1410,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
       </div>
     </a>
     <!-- V22 — NUEVA ETAPA: Aula FBO (Formación Básica Obligatoria) -->
-    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/educacion-especial.html" target="_blank" rel="noopener" aria-label="Ver información oficial Educación Especial y Aula FBO en Junta de Andalucía">
+    <a class="oferta-card fade-up card-link" href="https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/areas/ensenanzas-escolarizacion/educacion-especial.html" target="_blank" rel="noopener" aria-label="Ver información oficial Educación Especial y Aula FBO en Junta de Andalucía">
       <div class="oferta-top fbo"><h3>Aula FBO</h3><p>Formación Básica Obligatoria</p></div>
       <div class="oferta-body">
         <ul>
@@ -1672,7 +1677,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <p class="section-desc">Iniciativas activas para enriquecer la experiencia educativa</p>
   </div>
   <div class="plan-grid stagger">
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/biblioteca-escolar" target="_blank" rel="noopener" aria-label="Ver planes de Participación y Oficio en Junta de Andalucía">
+    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portales/web/lecturas-bibliotecas-escolares/lectura" target="_blank" rel="noopener" aria-label="Ver planes de Participación y Oficio en Junta de Andalucía">
       <h4>Participación y oficio</h4>
       <div class="plan-items">
         <span class="plan-item">Bibliotecas Escolares</span>
@@ -1684,12 +1689,13 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
       </div>
       <div class="plan-coord">Coordinadores: Caridad Jiménez · Aroa Meana · Mónica Gálvez</div>
       <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/biblioteca-escolar" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Bibliotecas Escolares · Junta</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/bienestar-emocional" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Bienestar Emocional · Junta</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/igualdad-de-genero" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Plan de Igualdad · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portales/web/lecturas-bibliotecas-escolares/lectura" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Bibliotecas Escolares · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portales/web/planes-y-programas/programas-desarrollo-educativo/bienestar-emocional/presentacion" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Bienestar Emocional · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portales/web/igualdad/iii-plan-de-igualdad-de-genero-en-educacion-2024-2028" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">III Plan de Igualdad 2024–28 · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portals/web/transformacion-digital-educativa" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Transformación Digital Educativa (TDE) · Junta</a>
       </div>
     </a>
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/red-espacio-de-paz" target="_blank" rel="noopener" aria-label="Ver Convocatoria General de Planes en Junta de Andalucía">
+    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portales/web/convivencia-escolar/red-escuela-espacio-de-paz" target="_blank" rel="noopener" aria-label="Ver Convocatoria General de Planes en Junta de Andalucía">
       <h4>Convocatoria general</h4>
       <div class="plan-items">
         <span class="plan-item">Red Espacio de Paz</span>
@@ -1700,12 +1706,12 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
       </div>
       <div class="plan-coord">Coordinadores: M.ª Dolores Graciano · M.ª Dolores García · Aroa Meana</div>
       <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/red-espacio-de-paz" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Red Espacio de Paz · Junta</a>
-        <a href="https://agenciamedioambienteyagua.es/aldea" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Portal Proyecto Aldea · AMAYA</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/habitos-vida-saludable" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Hábitos Saludables · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portales/web/convivencia-escolar/red-escuela-espacio-de-paz" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Red Escuela Espacio de Paz · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portales/web/planes-y-programas/w/educacion-ambiental-para-la-sostenibilidad-aldea-" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Proyecto ALDEA · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/eaprendizaje/habitos-de-vida-saludable/" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Hábitos de Vida Saludable · Junta</a>
       </div>
     </a>
-    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/zona-de-transformacion-social" target="_blank" rel="noopener" aria-label="Ver Convocatoria Específica de Planes en Junta de Andalucía">
+    <a class="plan-card fade-up card-link" href="https://www.juntadeandalucia.es/educacion/portales/documents/270701/2467231/Instrucciones_ZTS_25_26_V.4(F).pdf/d8bbefdf-e697-83ff-630b-8157df67878d" target="_blank" rel="noopener" aria-label="Ver Convocatoria Específica de Planes en Junta de Andalucía">
       <h4>Convocatoria específica</h4>
       <div class="plan-items">
         <span class="plan-item">Programa Atención ZTS</span>
@@ -1713,8 +1719,8 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
         <span class="plan-item">Aulas Verdes Abiertas 2025</span>
       </div>
       <div class="plan-links" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/zona-de-transformacion-social" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Zonas Transformación Social · Junta</a>
-        <a href="https://www.juntadeandalucia.es/educacion/portals/web/planes-y-programas/aulas-verdes" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Aulas Verdes Abiertas · Junta</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portales/documents/270701/2467231/Instrucciones_ZTS_25_26_V.4(F).pdf/d8bbefdf-e697-83ff-630b-8157df67878d" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">PDF · Instrucciones ZTS 2025/26 (Junta)</a>
+        <a href="https://www.juntadeandalucia.es/educacion/portals/delegate/content/cc460ccb-7a51-450e-a446-b52e5401469b/Convocatoria%20Aulas%20Verdes%20Abiertas" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">PDF · Convocatoria Aulas Verdes Abiertas (Junta)</a>
       </div>
     </a>
   </div>
@@ -1727,7 +1733,7 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
     <h2 class="section-title">Selectividad</h2>
     <p class="section-desc">Estructura de las pruebas de acceso</p>
   </div>
-  <a class="select-card fade-up card-link" href="https://www.juntadeandalucia.es/economiainnovacioncienciayempleo/unia/html/acceso/alumnos/prueba.html" target="_blank" rel="noopener" aria-label="Ver PEvAU/Selectividad — Distrito Único Andaluz">
+  <a class="select-card fade-up card-link" href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_procedimiento_acceso.php" target="_blank" rel="noopener" aria-label="Ver PEvAU/Selectividad — Distrito Único Andaluz">
     <div class="select-phase">
       <h4>Fase obligatoria</h4>
       <div class="select-tags">
@@ -1758,9 +1764,10 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
       </div>
     </div>
     <div class="select-phase" style="display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px;border-top:1px solid var(--s200)">
-      <a href="https://www.juntadeandalucia.es/distritounicoandaluz/" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Distrito Único Andaluz — Admisión universitaria</a>
-      <a href="https://www.juntadeandalucia.es/distritounicoandaluz/comun/html/vistaPreviaContenido.html?idContenido=41694&idPortal=45&idVersion=0" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Parámetros de ponderación por universidad y grado</a>
-      <a href="https://www.juntadeandalucia.es/economiainnovacioncienciayempleo/unia/html/acceso/alumnos/notas_corte.html" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Notas de corte oficiales — Universidades andaluzas</a>
+      <a href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=mapa" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Distrito Único Andaluz · Acceso universidad</a>
+      <a href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_procedimiento_acceso.php" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Procedimiento PEvAU (estructura pruebas)</a>
+      <a href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/?q=grados&amp;d=g_b_parametros_top.php" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">Parámetros de ponderación por grado/universidad</a>
+      <a href="https://www.juntadeandalucia.es/economiaconocimientoempresasyuniversidad/sguit/documentacion/2024/PARAMETROS_DE_PONDERACION_2024_2025_DUA.pdf" target="_blank" rel="noopener" class="inst-link" onclick="event.stopPropagation()">PDF · Parámetros Ponderación 2024/25 (DUA)</a>
     </div>
   </a>
 </section>
@@ -2365,8 +2372,59 @@ if ('serviceWorker' in navigator) {
    .lightbox-src) abre el modal. Cierre por backdrop, botón o Escape.
    Inyección del markup diferida a DOMContentLoaded para no bloquear.
 */
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHTBOX v4 — FLIP + spring physics (Framer Motion layoutId clone)
+   ─────────────────────────────────────────────────────────────────
+   Técnica: el click captura el rect del <img> source, se clona en un
+   contenedor absoluto con esas mismas dimensiones (First). Se calcula
+   el rect de destino (Last), se anima con spring via rAF cambiando
+   sólo transform — ningún layout trigger. 60fps sostenido.
+   Config spring: stiffness 320, damping 26, mass 0.7 (snap elástico).
+   ═══════════════════════════════════════════════════════════════════ */
 (function(){
-  var root,img,caption,badge,lastFocus,closeTimer;
+  var root, stage, img, caption, badgeEl, captionText, closeBtn;
+  var currentSrcEl = null, lastFocus = null, rafId = null, isOpen = false;
+
+  /* ── Spring integrator (semi-implicit Euler) ───────────────────── */
+  function spring(from, to, cfg, onUpdate, onComplete){
+    var stiffness = cfg.stiffness || 320;
+    var damping   = cfg.damping   || 26;
+    var mass      = cfg.mass      || 0.7;
+    var precision = cfg.precision || 0.02;
+
+    var state = from.map(function(v,i){
+      return { x:v, v:0, target:to[i] };
+    });
+    var last = performance.now();
+    var id;
+    function frame(now){
+      var dt = Math.min((now - last) / 1000, 1/30); // cap at 30fps min (avoid huge dt)
+      last = now;
+      var settled = true;
+      var values = new Array(state.length);
+      for (var i=0; i<state.length; i++){
+        var s = state[i];
+        var force   = -stiffness * (s.x - s.target);
+        var damper  = -damping   * s.v;
+        var accel   = (force + damper) / mass;
+        s.v += accel * dt;
+        s.x += s.v   * dt;
+        if (Math.abs(s.v) > precision || Math.abs(s.x - s.target) > precision) settled = false;
+        values[i] = s.x;
+      }
+      onUpdate(values);
+      if (!settled) {
+        id = requestAnimationFrame(frame);
+      } else {
+        onUpdate(to.slice());
+        if (onComplete) onComplete();
+      }
+    }
+    id = requestAnimationFrame(frame);
+    return function cancel(){ if (id) cancelAnimationFrame(id); };
+  }
+
+  /* ── DOM init (lazy) ──────────────────────────────────────────── */
   function ensureRoot(){
     if (root) return root;
     root = document.createElement('div');
@@ -2374,70 +2432,160 @@ if ('serviceWorker' in navigator) {
     root.setAttribute('role','dialog');
     root.setAttribute('aria-modal','true');
     root.setAttribute('aria-hidden','true');
-    root.innerHTML = '<div class="lbx-backdrop" data-lbx-close></div>'+
-      '<div class="lbx-stage">'+
-        '<span class="lbx-badge"></span>'+
-        '<button class="lbx-close" type="button" aria-label="Cerrar imagen" data-lbx-close></button>'+
-        '<img class="lbx-img" alt="" />'+
-        '<div class="lbx-caption"></div>'+
-      '</div>';
+    root.innerHTML =
+      '<div class="lbx-backdrop" data-lbx-close></div>'+
+      '<div class="lbx-stage"><img class="lbx-img" alt="" /></div>'+
+      '<button class="lbx-close" type="button" aria-label="Cerrar imagen" data-lbx-close></button>'+
+      '<div class="lbx-caption"><span class="lbx-badge"></span><span class="lbx-caption-text"></span></div>';
     document.body.appendChild(root);
-    img = root.querySelector('.lbx-img');
-    caption = root.querySelector('.lbx-caption');
-    badge = root.querySelector('.lbx-badge');
+    stage        = root.querySelector('.lbx-stage');
+    img          = root.querySelector('.lbx-img');
+    caption      = root.querySelector('.lbx-caption');
+    badgeEl      = root.querySelector('.lbx-badge');
+    captionText  = root.querySelector('.lbx-caption-text');
+    closeBtn     = root.querySelector('.lbx-close');
     root.addEventListener('click', function(ev){
-      if (ev.target.hasAttribute && ev.target.hasAttribute('data-lbx-close')) close();
+      if (ev.target && ev.target.hasAttribute && ev.target.hasAttribute('data-lbx-close')) close();
     });
     return root;
   }
-  function open(src, alt, cap, area){
-    if (closeTimer) { clearTimeout(closeTimer); root.classList.remove('lbx-closing'); }
+
+  /* ── Compute target rect (centered, fits viewport 92vw x 88vh) ── */
+  function computeTargetRect(natW, natH){
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var maxW = vw * 0.92, maxH = vh * 0.86;
+    var ratio = natW / natH || 1.5;
+    var w, h;
+    if (maxW / ratio <= maxH) { w = maxW; h = maxW / ratio; }
+    else                      { h = maxH; w = maxH * ratio; }
+    return {
+      x: (vw - w) / 2,
+      y: (vh - h) / 2,
+      w: w, h: h
+    };
+  }
+
+  /* ── OPEN ─────────────────────────────────────────────────────── */
+  function open(srcEl, cap, area){
+    if (isOpen) return;
     ensureRoot();
+    isOpen = true;
+    currentSrcEl = srcEl;
     lastFocus = document.activeElement;
+
+    var rect = srcEl.getBoundingClientRect();
+    var src  = srcEl.currentSrc || srcEl.src;
+
+    /* Prepare stage at source position (FIRST frame) */
     img.src = src;
-    img.alt = alt || '';
-    caption.textContent = cap || alt || '';
-    if (area) { badge.textContent = area; badge.style.display = 'inline-flex'; }
-    else { badge.style.display = 'none'; }
+    img.alt = srcEl.alt || '';
+    stage.style.width  = rect.width  + 'px';
+    stage.style.height = rect.height + 'px';
+    stage.style.transform = 'translate3d(' + rect.left + 'px,' + rect.top + 'px,0)';
+    /* Caption + badge */
+    if (area) { badgeEl.textContent = area; badgeEl.style.display = 'inline-block'; }
+    else      { badgeEl.style.display = 'none'; }
+    captionText.textContent = cap || srcEl.alt || '';
+
+    /* Hide source to avoid double-render */
+    srcEl.classList.add('lbx-src-hidden');
     document.body.classList.add('lbx-locked');
+
+    /* Show backdrop (CSS transition on opacity) */
     root.classList.add('lbx-open');
     root.setAttribute('aria-hidden','false');
-    var btn = root.querySelector('.lbx-close');
-    setTimeout(function(){ if (btn) btn.focus(); }, 80);
+
+    /* Wait 1 frame so image loads dims, then animate FIRST → LAST */
+    var run = function(){
+      var natW = img.naturalWidth  || rect.width;
+      var natH = img.naturalHeight || rect.height;
+      var target = computeTargetRect(natW, natH);
+      spring(
+        [rect.left, rect.top, rect.width, rect.height],
+        [target.x, target.y, target.w, target.h],
+        { stiffness: 320, damping: 26, mass: 0.7 },
+        function(v){
+          stage.style.width  = v[2] + 'px';
+          stage.style.height = v[3] + 'px';
+          stage.style.transform = 'translate3d(' + v[0] + 'px,' + v[1] + 'px,0)';
+        },
+        function(){
+          if (closeBtn) closeBtn.focus();
+        }
+      );
+    };
+    if (img.complete && img.naturalWidth) { requestAnimationFrame(run); }
+    else { img.onload = function(){ requestAnimationFrame(run); }; }
   }
+
+  /* ── CLOSE ────────────────────────────────────────────────────── */
   function close(){
-    if (!root) return;
-    root.classList.add('lbx-closing');
+    if (!isOpen || !root) return;
+    isOpen = false;
+
+    var stageRect = stage.getBoundingClientRect();
+    var target;
+    if (currentSrcEl && document.contains(currentSrcEl)) {
+      var r = currentSrcEl.getBoundingClientRect();
+      target = [r.left, r.top, r.width, r.height];
+    } else {
+      var vw = window.innerWidth, vh = window.innerHeight;
+      target = [vw/2, vh/2, 0, 0];
+    }
+
+    /* Fade out backdrop + UI (CSS) at the same time as FLIP */
     root.classList.remove('lbx-open');
     root.setAttribute('aria-hidden','true');
-    document.body.classList.remove('lbx-locked');
-    closeTimer = setTimeout(function(){
-      root.classList.remove('lbx-closing');
-      if (img) img.src = '';
-    }, 320);
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
+
+    spring(
+      [stageRect.left, stageRect.top, stageRect.width, stageRect.height],
+      target,
+      { stiffness: 360, damping: 30, mass: 0.6 },
+      function(v){
+        stage.style.width  = v[2] + 'px';
+        stage.style.height = v[3] + 'px';
+        stage.style.transform = 'translate3d(' + v[0] + 'px,' + v[1] + 'px,0)';
+      },
+      function(){
+        if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
+        document.body.classList.remove('lbx-locked');
+        img.src = '';
+        stage.style.transform = '';
+        stage.style.width = stage.style.height = '';
+        currentSrcEl = null;
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+    );
   }
+
+  /* ── Event delegation ─────────────────────────────────────────── */
   function isEligible(el){
     if (!el || el.tagName !== 'IMG') return false;
     if (el.hasAttribute('data-lightbox')) return true;
-    var p = el.closest && el.closest('.lightbox-src,.gal22-item,.gallery-item,.gallery-card,.act-card,.teatro-item');
-    return !!p;
+    return !!(el.closest && el.closest('.lightbox-src,.gal22-item,.gallery-item,.gallery-card,.act-card,.teatro-item'));
   }
   document.addEventListener('click', function(ev){
     var t = ev.target;
     if (!isEligible(t)) return;
     ev.preventDefault();
-    /* Resolve caption + area from img itself or nearest [data-lightbox] ancestor */
-    var parent = t.closest('[data-lightbox]') || t.closest('.gallery-item,.gal22-item,.gallery-card');
-    var cap = t.getAttribute('data-caption')
-      || (parent && parent.getAttribute('data-caption'))
-      || t.alt || '';
+    var parent = t.closest('[data-lightbox]') || t.closest('.gallery-item,.gal22-item,.gallery-card,.act-card,.teatro-item');
+    var cap  = t.getAttribute('data-caption')
+            || (parent && parent.getAttribute('data-caption'))
+            || t.alt || '';
     var area = (parent && parent.getAttribute('data-area')) || '';
-    open(t.currentSrc || t.src, t.alt, cap, area);
+    open(t, cap, area);
   }, true);
   document.addEventListener('keydown', function(ev){
-    if (ev.key === 'Escape' && root && root.classList.contains('lbx-open')) close();
+    if (ev.key === 'Escape' && isOpen) close();
   });
+  window.addEventListener('resize', function(){
+    if (isOpen && img && img.naturalWidth) {
+      var target = computeTargetRect(img.naturalWidth, img.naturalHeight);
+      stage.style.width  = target.w + 'px';
+      stage.style.height = target.h + 'px';
+      stage.style.transform = 'translate3d(' + target.x + 'px,' + target.y + 'px,0)';
+    }
+  }, { passive: true });
 })();
 </script>
 </body>
