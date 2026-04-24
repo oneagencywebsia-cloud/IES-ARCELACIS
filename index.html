@@ -647,6 +647,41 @@ a.oferta-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 .inst-name{font-size:.82rem;font-weight:700;color:var(--s700)}
 .inst-desc{font-size:.72rem;color:var(--s400);margin-top:1px}
 
+/* <details> open/close refactor — el <details> es flex porque <summary> lo espera pero la galería necesita span completo */
+.inst-item{display:block}
+.inst-item>summary{
+  display:flex;align-items:center;gap:12px;list-style:none;cursor:pointer;
+  padding:2px 0;
+}
+.inst-item>summary::-webkit-details-marker{display:none}
+.inst-item>summary>div:nth-child(2){flex:1;min-width:0}
+.inst-chev{
+  margin-left:auto;color:var(--s400);font-size:.8rem;
+  transition:transform 260ms cubic-bezier(.34,1.44,.64,1);
+}
+.inst-item[open] .inst-chev{transform:rotate(180deg)}
+
+/* Galería in-place — miniaturas clicables, GPU promoted */
+.inst-gal{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:8px;margin-top:14px;
+}
+.inst-gal img{
+  width:100%;aspect-ratio:4/3;object-fit:cover;
+  border-radius:10px;cursor:zoom-in;display:block;
+  transform:translateZ(0);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  transition:transform 280ms cubic-bezier(.34,1.44,.64,1),
+             box-shadow 280ms ease;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+.inst-gal img:hover{
+  transform:translate3d(0,-2px,0) scale(1.02);
+  box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+.inst-gal img:active{transform:translateZ(0) scale(.98)}
+
 /* ============================================================
    PLANES
    ============================================================ */
@@ -1480,7 +1515,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
   </div>
   <div class="act-grid stagger">
     <div class="act-card fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/WhatsApp-Image-2025-10-28-at-19.30.39.jpeg" alt="Visita al Parlamento de Andalucía" class="act-card-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/WhatsApp-Image-2025-10-28-at-19.30.39.jpeg" alt="Visita al Parlamento de Andalucía" class="act-card-img" loading="lazy" decoding="async">
       <div class="act-card-body">
         <h4>Visita a Sevilla — Parlamento de Andalucía</h4>
         <p>4.º de ESO visitó el Parlamento Andaluz, la Catedral y el Arco de la Macarena. Profesores acompañantes: M.ª Dolores López (Filosofía) y Rosa Ana Aguado (Geo. e Historia).</p>
@@ -1488,7 +1523,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
       </div>
     </div>
     <div class="act-card fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5742-scaled.jpeg" alt="Exposición Día de la Empresa Andaluza" class="act-card-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5742-scaled.jpeg" alt="Exposición Día de la Empresa Andaluza" class="act-card-img" loading="lazy" decoding="async">
       <div class="act-card-body">
         <h4>Día de la Empresa Andaluza</h4>
         <p>Exposición de carteles sobre empresas andaluzas en el hall del centro. Actividad coordinada por Mónica Gálvez (Economía).</p>
@@ -1496,7 +1531,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
       </div>
     </div>
     <div class="act-card fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-10-at-10.46.49-1.jpeg" alt="25N - Lazos por la Igualdad" class="act-card-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-10-at-10.46.49-1.jpeg" alt="25N - Lazos por la Igualdad" class="act-card-img" loading="lazy" decoding="async">
       <div class="act-card-body">
         <h4>25N — Contra la Violencia de Género</h4>
         <p>Árbol simbólico con lazos morados y paneles expositivos. Los estudiantes escribieron frases de apoyo, respeto y empatía.</p>
@@ -1504,7 +1539,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
       </div>
     </div>
     <div class="act-card fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-05-at-15.11.54.jpeg" alt="Día del Flamenco" class="act-card-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2026/01/WhatsApp-Image-2026-01-05-at-15.11.54.jpeg" alt="Día del Flamenco" class="act-card-img" loading="lazy" decoding="async">
       <div class="act-card-body">
         <h4>Día del Flamenco</h4>
         <p>Alumnos creando paneles interactivos con figuras flamencas cercanas a Santaella. Inspirado en la obra "Carnación" de Rocío Molina.</p>
@@ -1537,31 +1572,31 @@ a.oferta-tag,a.plan-item,a.select-tag{
   </div>
   <div class="teatro-timeline">
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-24-25.-Chicago-1.png" alt="Chicago" class="teatro-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-24-25.-Chicago-1.png" alt="Chicago" class="teatro-img" loading="lazy" decoding="async">
       <div class="teatro-body"><span class="teatro-year">2024-25</span><h4>Chicago</h4><p>Última producción del departamento de Música</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-23-24.-Rocketman.-2.jpg" alt="Rocketman" class="teatro-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-23-24.-Rocketman.-2.jpg" alt="Rocketman" class="teatro-img" loading="lazy" decoding="async">
       <div class="teatro-body"><span class="teatro-year">2023-24</span><h4>Rocketman</h4><p>Homenaje musical a Elton John</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-22-23.-Desmontando-a-Shakespeare-2-scaled.jpg" alt="Desmontando a Shakespeare" class="teatro-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-22-23.-Desmontando-a-Shakespeare-2-scaled.jpg" alt="Desmontando a Shakespeare" class="teatro-img" loading="lazy" decoding="async">
       <div class="teatro-body"><span class="teatro-year">2022-23</span><h4>Desmontando a Shakespeare</h4><p>Reinterpretación creativa de los clásicos</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-18-19.-Hairspray-1-scaled.jpg" alt="Hairspray" class="teatro-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-18-19.-Hairspray-1-scaled.jpg" alt="Hairspray" class="teatro-img" loading="lazy" decoding="async">
       <div class="teatro-body"><span class="teatro-year">2018-19</span><h4>Hairspray</h4><p>Musical lleno de energía y color</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-17-18.-Una-serie-de-catastroficas-desdichas.-1-scaled.jpg" alt="Una serie de catastroficas desdichas" class="teatro-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-17-18.-Una-serie-de-catastroficas-desdichas.-1-scaled.jpg" alt="Una serie de catastroficas desdichas" class="teatro-img" loading="lazy" decoding="async">
       <div class="teatro-body"><span class="teatro-year">2017-18</span><h4>Una serie de catastróficas desdichas</h4><p>Adaptación teatral de la famosa saga</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-16-17.-El-jorobado-de-Notre-Dame.-2.jpg" alt="El jorobado de Notre Dame" class="teatro-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-16-17.-El-jorobado-de-Notre-Dame.-2.jpg" alt="El jorobado de Notre Dame" class="teatro-img" loading="lazy" decoding="async">
       <div class="teatro-body"><span class="teatro-year">2016-17</span><h4>El jorobado de Notre Dame</h4><p>Clásico musical con gran puesta en escena</p></div>
     </div>
     <div class="teatro-item fade-up">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-15-16.-Into-the-woods-1.jpg" alt="Into the Woods" class="teatro-img" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/11/Curso-15-16.-Into-the-woods-1.jpg" alt="Into the Woods" class="teatro-img" loading="lazy" decoding="async">
       <div class="teatro-body"><span class="teatro-year">2015-16</span><h4>Into the Woods</h4><p>Musical de Stephen Sondheim</p></div>
     </div>
   </div>
@@ -1578,49 +1613,45 @@ a.oferta-tag,a.plan-item,a.select-tag{
   <div class="gallery-grid stagger">
     <!-- Accesos y fachada -->
     <div class="gallery-item wide fade-up" data-lightbox data-caption="Fachada principal — Entrada con banderas institucionales" data-area="Exteriores">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" alt="Fachada principal del IES Arcelacis" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" alt="Fachada principal del IES Arcelacis" loading="lazy" decoding="async">
       <div class="gallery-item-label"><span>Fachada principal</span><small>Exteriores · Acceso</small></div>
     </div>
     <div class="gallery-item fade-up" data-lightbox data-caption="Hall del centro — Vestíbulo con exposiciones del alumnado" data-area="Interiores">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5740-2-scaled.jpeg" alt="Hall interior del centro" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5740-2-scaled.jpeg" alt="Hall interior del centro" loading="lazy" decoding="async">
       <div class="gallery-item-label"><span>Hall del centro</span><small>Interiores · Exposiciones</small></div>
     </div>
     <!-- Biblioteca — Lengua / Coordinación de Bibliotecas Escolares -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Biblioteca — "Today a Reader, Tomorrow a Leader" · Dpto. Lengua" data-area="Biblioteca">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5598-scaled.jpeg" alt="Biblioteca del centro" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5598-scaled.jpeg" alt="Biblioteca del centro" loading="lazy" decoding="async">
       <div class="gallery-item-label"><span>Biblioteca</span><small>Dpto. Lengua Castellana</small></div>
     </div>
     <!-- Acceso lateral / accesibilidad -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Acceso lateral — Rampa accesible al edificio" data-area="Exteriores">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5596-scaled.jpeg" alt="Rampa accesible al edificio" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5596-scaled.jpeg" alt="Rampa accesible al edificio" loading="lazy" decoding="async">
       <div class="gallery-item-label"><span>Acceso lateral</span><small>Exteriores · Accesibilidad</small></div>
     </div>
     <!-- Zona verde — Biología / Proyecto Aldea -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Jardines — Cipreses y zonas verdes · Proyecto Aldea / Biología" data-area="Jardines">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines del centro con cipreses" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5595-scaled.jpeg" alt="Jardines del centro con cipreses" loading="lazy" decoding="async">
       <div class="gallery-item-label"><span>Jardines</span><small>Biología · Proyecto Aldea</small></div>
     </div>
     <!-- Patio — zona de convivencia -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Patio del centro — Zona ajardinada con rosales, convivencia del alumnado" data-area="Patio">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/d96c1ae1-d928-44cb-afd9-d2c1d20a196e.jpeg" alt="Patio con rosales" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/d96c1ae1-d928-44cb-afd9-d2c1d20a196e.jpeg" alt="Patio con rosales" loading="lazy" decoding="async">
       <div class="gallery-item-label"><span>Patio</span><small>Zona ajardinada · Convivencia</small></div>
     </div>
     <!-- Escalera de entrada -->
     <div class="gallery-item fade-up" data-lightbox data-caption="Acceso principal — Escaleras de entrada al edificio" data-area="Exteriores">
-      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Escaleras de acceso principal" loading="lazy" / decoding="async">
+      <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5593-scaled.jpeg" alt="Escaleras de acceso principal" loading="lazy" decoding="async">
       <div class="gallery-item-label"><span>Entrada principal</span><small>Exteriores · Escaleras</small></div>
     </div>
   </div>
   <!-- V23 — Instalaciones con galería in-place: cada <details class="inst-item">
        despliega su propio conjunto de fotos al interactuar. Sin secciones
        redundantes, respetando el DOM original de la sección Instalaciones. -->
+  <!-- Filtro: solo se renderizan instalaciones con fotos reales verificadas.
+       Eliminadas (sin contenido visual): Biblioteca · Laboratorio · Secretaría · Aula de Música. -->
   <div class="inst-list stagger" style="margin-top:20px">
-    <details class="inst-item fade-up">
-      <summary><div class="inst-icon">📚</div><div><div class="inst-name">Biblioteca</div><div class="inst-desc">Dpto. Lengua · Plan de Bibliotecas Escolares</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
-    </details>
-    <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🔬</div><div><div class="inst-name">Laboratorio</div><div class="inst-desc">Dptos. Física, Química y Biología</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
-    </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">💻</div><div><div class="inst-name">Aula TIC</div><div class="inst-desc">Dpto. Informática · TDE</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
@@ -1643,13 +1674,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
       </div>
     </details>
     <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🎵</div><div><div class="inst-name">Aula de Música</div><div class="inst-desc">Dpto. Música · Ensayos, coro y piano</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
-      <div class="inst-gal">
-        <img src="img/galeria/musica.jpg" alt="Aula de Música — Dpto. Música" loading="lazy" data-caption="Aula de Música · Dpto. de Música" decoding="async">
-      </div>
-    </details>
-    <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🎭</div><div><div class="inst-name">SUM · Salón de Usos Múltiples</div><div class="inst-desc">Producciones teatrales dirigidas por Jorge Illanes</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
+      <summary><div class="inst-icon">🎭</div><div><div class="inst-name">SUM · Salón de Usos Múltiples</div><div class="inst-desc">Dpto. Música · Producciones teatrales (Jorge Illanes)</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
         <img src="img/galeria/sum.jpg" alt="Salón de Usos Múltiples (SUM)" loading="lazy" data-caption="SUM — Salón de Usos Múltiples · Producciones teatrales" decoding="async">
       </div>
@@ -1661,9 +1686,6 @@ a.oferta-tag,a.plan-item,a.select-tag{
         <img src="img/galeria/gimnasio-2.jpg" alt="Gimnasio — interior" loading="lazy" data-caption="Gimnasio — interior" decoding="async">
         <img src="img/galeria/gimnasio-3.jpg" alt="Gimnasio — zona deportiva" loading="lazy" data-caption="Gimnasio — zona deportiva" decoding="async">
       </div>
-    </details>
-    <details class="inst-item fade-up">
-      <summary><div class="inst-icon">🏢</div><div><div class="inst-name">Secretaría</div><div class="inst-desc">Gestión administrativa y matriculación</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🌳</div><div><div class="inst-name">Patio</div><div class="inst-desc">Zona central del centro, convivencia y actos</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
@@ -1890,14 +1912,14 @@ a.oferta-tag,a.plan-item,a.select-tag{
 <!-- EU BANNER -->
 <div class="eu-banner">
   <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/wp-content/themes/pencil/images/andalucia-ue-color.png"
-       alt="Consejería de Desarrollo Educativo — Unión Europea" height="36" loading="lazy" / decoding="async">
+       alt="Consejería de Desarrollo Educativo — Unión Europea" height="36" loading="lazy" decoding="async">
 </div>
 
 <!-- FOOTER -->
 <footer class="footer" role="contentinfo">
   <div class="footer-logo">
     <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png"
-         alt="IES Arcelacis" width="34" height="34" loading="lazy" / decoding="async">
+         alt="IES Arcelacis" width="34" height="34" loading="lazy" decoding="async">
   </div>
   <p><strong>IES Arcelacis</strong> — Santaella, Córdoba</p>
   <p style="margin-top:3px">C. Villargallegos, s/n · Tel. 957 31 34 55</p>
@@ -2631,7 +2653,13 @@ if ('serviceWorker' in navigator) {
     var target;
     if (currentSrcEl && document.contains(currentSrcEl)) {
       var r = currentSrcEl.getBoundingClientRect();
-      target = [r.left, r.top, r.width, r.height];
+      /* Si el source está oculto (p.ej. <details> cerrado) → colapsa al centro */
+      if (r.width === 0 || r.height === 0) {
+        var vw0 = window.innerWidth, vh0 = window.innerHeight;
+        target = [vw0/2 - stageRect.width*0.1, vh0/2 - stageRect.height*0.1, stageRect.width*0.2, stageRect.height*0.2];
+      } else {
+        target = [r.left, r.top, r.width, r.height];
+      }
     } else {
       var vw = window.innerWidth, vh = window.innerHeight;
       target = [vw/2, vh/2, 0, 0];
@@ -2667,13 +2695,13 @@ if ('serviceWorker' in navigator) {
   function isEligible(el){
     if (!el || el.tagName !== 'IMG') return false;
     if (el.hasAttribute('data-lightbox')) return true;
-    return !!(el.closest && el.closest('.lightbox-src,.gal22-item,.gallery-item,.gallery-card,.act-card,.teatro-item'));
+    return !!(el.closest && el.closest('.lightbox-src,.gal22-item,.gallery-item,.gallery-card,.act-card,.teatro-item,.inst-gal'));
   }
   document.addEventListener('click', function(ev){
     var t = ev.target;
     if (!isEligible(t)) return;
     ev.preventDefault();
-    var parent = t.closest('[data-lightbox]') || t.closest('.gallery-item,.gal22-item,.gallery-card,.act-card,.teatro-item');
+    var parent = t.closest('[data-lightbox]') || t.closest('.gallery-item,.gal22-item,.gallery-card,.act-card,.teatro-item,.inst-gal');
     var cap  = t.getAttribute('data-caption')
             || (parent && parent.getAttribute('data-caption'))
             || t.alt || '';
