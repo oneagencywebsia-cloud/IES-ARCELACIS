@@ -2869,9 +2869,8 @@ if ('serviceWorker' in navigator) {
       root.setAttribute('aria-hidden','true');
     }
     if (stage){
+      stage.style.cssText = 'transform:translate3d(-9999px,-9999px,0);opacity:1;width:0;height:0';
       stage.classList.remove('lbx-loaded','lbx-animating');
-      stage.style.transform = 'translate3d(-9999px,-9999px,0)';
-      stage.style.willChange = '';
     }
     if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
     document.body.classList.remove('lbx-locked');
@@ -2895,7 +2894,6 @@ if ('serviceWorker' in navigator) {
 
   /* ── OPEN ─────────────────────────────────────────────────────── */
   function open(srcEl, cap, area){
-    /* Si ya hay una animación en curso, matamos y re-lanzamos */
     if (state !== 'idle'){ killSwitch(); }
 
     ensureRoot();
@@ -2906,7 +2904,6 @@ if ('serviceWorker' in navigator) {
     var rect = srcEl.getBoundingClientRect();
     var src  = srcEl.currentSrc || srcEl.src;
 
-    /* Limpiar clases de animación anterior */
     stage.classList.remove('lbx-loaded','lbx-animating');
 
     img.alt = srcEl.alt || '';
@@ -2914,14 +2911,14 @@ if ('serviceWorker' in navigator) {
     else     { badgeEl.style.display = 'none'; }
     captionText.textContent = cap || srcEl.alt || '';
 
-    /* Asignar src — si es la misma imagen que antes, el bitmap ya está en GPU (sin re-fetch) */
     img.src = src;
 
-    /* Pre-posicionar el stage sobre el thumbnail antes de hacerlo visible.
-       stage.style.cssText sobreescribe cualquier transform residual de -9999px. */
+    /* Resetear opacity explícitamente — commitStyles() del cierre anterior
+       puede haber dejado opacity:0 en el style inline del stage */
     stage.style.cssText = [
-      'width:'            + rect.width  + 'px',
-      'height:'           + rect.height + 'px',
+      'width:'     + rect.width  + 'px',
+      'height:'    + rect.height + 'px',
+      'opacity:1',
       'transform:translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(1,1)',
       'transform-origin:0 0'
     ].join(';');
@@ -3068,23 +3065,23 @@ if ('serviceWorker' in navigator) {
     );
 
     var done = function(){
-      try { if (activeAnim) activeAnim.commitStyles(); } catch(_){}
+      /* NO commitStyles() aquí — escribiría opacity:0 en inline style
+         y un repaint entre opacity:0 y el park a -9999px causaría el flash.
+         Cancelamos sin fijar estilos, luego hacemos todo en un solo batch. */
       try { if (activeAnim) activeAnim.cancel(); } catch(_){}
       activeAnim = null;
       disarmKillTimer();
-      /* Quitar lbx-open DESPUÉS de que el stage ya es opacidad 0 —
-         la CSS transition del backdrop arranca desde un overlay ya invisible */
+      /* Un único batch de escrituras DOM: park + quitar lbx-open + unlock body.
+         El browser ve todo en el mismo frame — cero repaint intermedio. */
+      if (stage){
+        stage.style.cssText = 'transform:translate3d(-9999px,-9999px,0);opacity:1;width:0;height:0';
+        stage.classList.remove('lbx-animating','lbx-loaded');
+      }
       root.classList.remove('lbx-open');
       root.setAttribute('aria-hidden','true');
       document.body.classList.remove('lbx-locked');
       document.body.style.top = '';
       window.scrollTo(0, savedScrollY);
-      if (stage){
-        stage.style.opacity  = '';
-        stage.style.transform = 'translate3d(-9999px,-9999px,0)';
-        stage.style.willChange = '';
-        stage.classList.remove('lbx-animating');
-      }
       currentSrcEl = null;
       finalTarget  = null;
       state = 'idle';
