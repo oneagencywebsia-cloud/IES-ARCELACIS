@@ -1088,9 +1088,11 @@ a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 img[data-lightbox]{cursor:zoom-in}
 body.lbx-locked{
   overflow:hidden;
-  position:fixed;
-  width:100%;
-  /* top fijado vía JS — preserva posición de scroll en iOS WebKit */
+  /* Sin position:fixed — evita el full-page repaint en Chrome/Android y el
+     layout shift en iOS Safari. overscroll-behavior bloquea el scroll nativo
+     sin tocar el stacking context ni el compositor. */
+  overscroll-behavior:none;
+  touch-action:none;
 }
 
 /* Respect reduced motion */
@@ -2874,8 +2876,6 @@ if ('serviceWorker' in navigator) {
     }
     if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
     document.body.classList.remove('lbx-locked');
-    document.body.style.top = '';
-    window.scrollTo(0, savedScrollY);
     /* No vaciar img.src — preservar bitmap en GPU para evitar re-fetch */
     if (pendingLoad && img){ img.removeEventListener('load', pendingLoad); pendingLoad = null; }
     currentSrcEl = null;
@@ -2926,8 +2926,6 @@ if ('serviceWorker' in navigator) {
     /* Reflow sincrónico — fija el layout del stage antes de que el root se haga visible */
     void stage.offsetWidth;
 
-    savedScrollY = window.pageYOffset || 0;
-    document.body.style.top = '-' + savedScrollY + 'px';
     document.body.classList.add('lbx-locked');
     root.classList.add('lbx-open');
     root.setAttribute('aria-hidden','false');
@@ -3080,8 +3078,6 @@ if ('serviceWorker' in navigator) {
       root.classList.remove('lbx-open');
       root.setAttribute('aria-hidden','true');
       document.body.classList.remove('lbx-locked');
-      document.body.style.top = '';
-      window.scrollTo(0, savedScrollY);
       currentSrcEl = null;
       finalTarget  = null;
       state = 'idle';
