@@ -968,8 +968,9 @@ a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
   -webkit-backface-visibility:hidden;
 }
 
-/* Source hidden while animating (evita duplicación visual) */
-.lbx-src-hidden{visibility:hidden}
+/* Source hidden mientras anima — opacity 0 aplica en compositor (sin reflow/paint)
+   visibility:hidden forzaba un frame de style recalc → parpadeo visible */
+.lbx-src-hidden{opacity:0!important;transition:none!important}
 
 /* Close button — posicionado por JS en la esquina superior-derecha de la foto (no del viewport) */
 .lbx-close{
@@ -2820,13 +2821,16 @@ if ('serviceWorker' in navigator) {
     var rect = srcEl.getBoundingClientRect();
     var src  = srcEl.currentSrc || srcEl.src;
 
+    /* Ocultar source INMEDIATAMENTE tras capturar el rect (antes del repaint)
+       → elimina el parpadeo del thumbnail que quedaba visible 1 frame */
+    srcEl.classList.add('lbx-src-hidden');
+
     img.src = src;
     img.alt = srcEl.alt || '';
     if (area){ badgeEl.textContent = area; badgeEl.style.display = 'inline-block'; }
     else     { badgeEl.style.display = 'none'; }
     captionText.textContent = cap || srcEl.alt || '';
 
-    srcEl.classList.add('lbx-src-hidden');
     document.body.classList.add('lbx-locked');
     root.classList.add('lbx-open');
     root.setAttribute('aria-hidden','false');
