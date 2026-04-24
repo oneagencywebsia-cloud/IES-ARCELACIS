@@ -2954,17 +2954,16 @@ if ('serviceWorker' in navigator) {
       stage.classList.add('lbx-animating');
 
       armKillTimer();
-      /* Solo transform — opacity del stage se mantiene en 1 durante apertura.
-         Una sola propiedad animada = compositor thread puro, cero paint en móvil. */
       activeAnim = stage.animate(
         [{ transform: fromTransform }, { transform: toTransform }],
-        { duration: 460, easing: 'cubic-bezier(.22,1.15,.36,1)', fill: 'forwards' }
+        { duration: 460, easing: 'cubic-bezier(.22,1.15,.36,1)', fill: 'none' }
       );
 
       activeAnim.onfinish = function(){
-        /* commitStyles escribe el estado final en .style y libera el fill:forwards
-           de memoria — crítico para GC en uso prolongado en móviles */
-        try { activeAnim.commitStyles(); } catch(_){}
+        /* Fijar transform final en inline style manualmente — sin commitStyles()
+           que puede dejar estado residual si la animación se interrumpe */
+        stage.style.transform = toTransform;
+        stage.style.opacity   = '1';
         try { activeAnim.cancel(); } catch(_){}
         activeAnim = null;
         stage.classList.remove('lbx-animating');
@@ -2974,6 +2973,9 @@ if ('serviceWorker' in navigator) {
         if (closeBtn) closeBtn.focus({ preventScroll: true });
       };
       activeAnim.oncancel = function(){
+        /* Al cancelar, fijar también el estado actual para no dejar fill residual */
+        stage.style.transform = toTransform;
+        stage.style.opacity   = '1';
         activeAnim = null;
         stage.classList.remove('lbx-animating');
         disarmKillTimer();
@@ -3004,11 +3006,11 @@ if ('serviceWorker' in navigator) {
   /* ── CLOSE ────────────────────────────────────────────────────── */
   function close(){
     if (state === 'idle' || state === 'closing') return;
-    /* Si estamos en medio de una apertura, la cancelamos para cerrar ya */
-    if (state === 'opening' && activeAnim){
-      try { activeAnim.cancel(); } catch(_) {}
-      activeAnim = null;
-      disarmKillTimer();
+    /* Si estamos abriendo y run() aún no ejecutó, finalTarget es null —
+       no hay nada que animar, reset limpio directo */
+    if (state === 'opening'){
+      killSwitch();
+      return;
     }
     if (!finalTarget){ killSwitch(); return; }
 
