@@ -39,7 +39,10 @@
 <link rel="preconnect" href="https://blogsaverroes.juntadeandalucia.es" crossorigin>
 <link rel="dns-prefetch" href="https://blogsaverroes.juntadeandalucia.es">
 <link rel="preload" as="image" href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png" fetchpriority="high">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" fetchpriority="high" media="(min-width:320px)">
+<!-- Font loading async — no bloquea first paint (técnica Smashing/Filament Group) -->
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"></noscript>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -109,6 +112,20 @@ html{
 }
 /* scroll-margin en section[id] — respetado por anchor nav nativo (fallback) */
 section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
+
+/* Durante scroll automático: desactivamos hover effects costosos
+   → libera main thread para que el scroll sea 60fps puro */
+html.is-scrolling *,
+html.is-scrolling *::before,
+html.is-scrolling *::after{
+  transition-duration:0s!important;
+  animation-duration:0s!important;
+  animation-delay:0s!important;
+}
+/* Re-activamos pointer-events-none en magnetic hovers durante scroll */
+html.is-scrolling a.oferta-tag,
+html.is-scrolling a.plan-item,
+html.is-scrolling a.select-tag{pointer-events:none}
 
 body{
   font-family:'Inter',system-ui,-apple-system,sans-serif;
@@ -962,21 +979,23 @@ a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 /* Source hidden while animating (evita duplicación visual) */
 .lbx-src-hidden{visibility:hidden}
 
-/* Close button — sale cuando abre, entra cuando expande */
+/* Close button — posicionado por JS en la esquina superior-derecha de la foto (no del viewport) */
 .lbx-close{
-  position:fixed;top:18px;right:18px;
-  width:46px;height:46px;border-radius:50%;
-  background:rgba(15,23,42,.8);
-  border:1px solid rgba(255,255,255,.14);
-  color:#f8fafc;z-index:100001;
+  position:fixed;top:0;left:0;  /* coords reales fijadas por JS en open() */
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(15,23,42,.9);
+  border:1px solid rgba(255,255,255,.18);
+  color:#f8fafc;z-index:100002;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;
-  opacity:0;transform:scale(.7) rotate(-45deg);
+  opacity:0;transform:scale(.6) rotate(-90deg);
   transition:
-    opacity 220ms cubic-bezier(.4,0,.2,1) 260ms,
-    transform 340ms cubic-bezier(.34,1.56,.64,1) 260ms,
+    opacity 220ms cubic-bezier(.4,0,.2,1) 320ms,
+    transform 380ms cubic-bezier(.34,1.56,.64,1) 320ms,
     background 180ms ease;
   font-size:0;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  -webkit-tap-highlight-color:transparent;
 }
 .lbx-close::before,.lbx-close::after{
   content:"";position:absolute;width:18px;height:2px;
@@ -1027,7 +1046,7 @@ body.lbx-locked{overflow:hidden}
 }
 
 @media (max-width:640px){
-  .lbx-close{top:12px;right:12px;width:42px;height:42px}
+  .lbx-close{width:36px;height:36px}
   .lbx-caption{bottom:18px;font-size:.8rem;padding:6px 14px}
 }
 
@@ -2038,11 +2057,12 @@ a.oferta-tag,a.plan-item,a.select-tag{
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-        } else {
-          entry.target.classList.remove('visible');
+          /* Unobserve inmediato — evita re-renders al hacer scroll de vuelta
+             (bug previo: quitaba .visible al salir del viewport, forzando relayout) */
+          revealIO.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
     revealEls.forEach(el => revealIO.observe(el));
   } else {
     revealEls.forEach(el => el.classList.add('visible'));
@@ -2056,13 +2076,12 @@ a.oferta-tag,a.plan-item,a.select-tag{
   function animateNum(el, target) {
     if (el.dataset.done) return;
     el.dataset.done = '1';
-    const duration = 1400;
+    const duration = 900;            // reducido de 1400ms — menos main thread
     let start = null;
     const step = (ts) => {
       if (!start) start = ts;
       const progress = Math.min((ts - start) / duration, 1);
-      // Ease-out cubic for natural deceleration
-      const eased = 1 - Math.pow(1 - progress, 3);
+      const eased = 1 - Math.pow(1 - progress, 4);  // easeOutQuart
       el.textContent = Math.round(eased * target);
       if (progress < 1) requestAnimationFrame(step);
       else el.textContent = target;
@@ -2084,46 +2103,44 @@ a.oferta-tag,a.plan-item,a.select-tag{
      Why: On hero (dark bg) nav blends invisibly; scrolled state
      activates blur+dark bg so it never fights readability.
   ============================================================ */
+  /* UN solo scroll listener unificado — evita doble rAF y race conditions.
+     Maneja: scroll-aware topnav + hero parallax.
+     Auto-desactiva el parallax si el hero ya no está visible (evita lecturas innecesarias). */
   const topNav = document.getElementById('topNav');
-  let scrollTicking = false;
-
-  function onScroll() {
-    if (!scrollTicking) {
-      requestAnimationFrame(() => {
-        topNav.classList.toggle('scrolled', window.scrollY > 10);
-        scrollTicking = false;
-      });
-      scrollTicking = true;
-    }
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll(); // initial state
-
-  /* ============================================================
-     4. HERO PARALLAX — scroll-linked subtle depth
-     Why: A ~10 % vertical shift on the background image gives depth
-     without motion sickness; translate3d keeps it GPU-composited.
-  ============================================================ */
-  const heroBefore = document.querySelector('.hero::before');
-  // We target the hero element and shift its pseudo via CSS custom property
   const hero = document.querySelector('.hero');
+  let unifiedTicking = false;
+  let lastScrollY = 0;
+  let heroVisibleThreshold = hero ? hero.offsetHeight + 200 : 0;
 
-  if (hero) {
-    window.addEventListener('scroll', () => {
-      if (!scrollTicking) {
-        requestAnimationFrame(() => {
-          const sy = window.scrollY;
-          // Only active while hero is visible
-          if (sy < hero.offsetHeight + 200) {
-            hero.style.setProperty('--parallax-y', `${sy * 0.14}px`);
-          }
-          scrollTicking = false;
-        });
-        scrollTicking = true;
+  function unifiedScroll(){
+    if (unifiedTicking) return;
+    unifiedTicking = true;
+    requestAnimationFrame(() => {
+      const sy = window.scrollY;
+      /* Top nav: toggle sólo si cambia el estado */
+      const scrolled = sy > 10;
+      if ((topNav.classList.contains('scrolled')) !== scrolled){
+        topNav.classList.toggle('scrolled', scrolled);
       }
-    }, { passive: true });
+      /* Parallax: sólo si el hero está visible */
+      if (hero && sy < heroVisibleThreshold){
+        hero.style.setProperty('--parallax-y', (sy * 0.14) + 'px');
+      }
+      lastScrollY = sy;
+      unifiedTicking = false;
+    });
   }
+  window.addEventListener('scroll', unifiedScroll, { passive: true });
+  unifiedScroll();
+
+  /* Recalc hero threshold si cambia el tamaño del viewport */
+  let resizeDebounce = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeDebounce);
+    resizeDebounce = setTimeout(() => {
+      heroVisibleThreshold = hero ? hero.offsetHeight + 200 : 0;
+    }, 150);
+  }, { passive: true });
 
   /* ============================================================
      5. BOTTOM NAV ACTIVE SECTION — persistent observer
@@ -2406,15 +2423,14 @@ a.oferta-tag,a.plan-item,a.select-tag{
       }, 420);
     }
 
-    /* Ease de nivel profesional: easeInOutQuart — arranque y frenado suaves */
-    function easeInOutQuart(t){
-      return t < 0.5
-        ? 8 * t * t * t * t
-        : 1 - Math.pow(-2 * t + 2, 4) / 2;
+    /* Ease fluido tipo iOS: easeOutQuint — salida rápida, frenado largo y cinematográfico */
+    function easeOutQuint(t){
+      return 1 - Math.pow(1 - t, 5);
     }
 
     function cancelScroll(){
       if (rafId){ cancelAnimationFrame(rafId); rafId = null; }
+      document.documentElement.classList.remove('is-scrolling');
     }
 
     function getTopOffset(){
@@ -2422,29 +2438,50 @@ a.oferta-tag,a.plan-item,a.select-tag{
       return (topNav ? topNav.offsetHeight : 56) + 12;
     }
 
-    /* scroll rAF custom — robusto: recalcula target cada frame (corrige si el layout cambia durante la animación por <details> abriéndose, lazy images cargando, etc.) */
+    /* scroll rAF custom:
+       • Target locked al inicio (evita jitter si el layout cambia)
+       • Recalcula 1 vez a mitad de animación (corrige si <details> abrió)
+       • Pausa hover/magnetic durante el scroll via .is-scrolling en <html>
+    */
     function smoothTo(targetEl, duration){
       cancelScroll();
       userScrolled = false;
-      var startY  = window.pageYOffset;
-      var startT  = performance.now();
-      var dur     = duration || 520;
+      document.documentElement.classList.add('is-scrolling');
 
-      /* Guardamos referencia al elemento — recalculamos en cada frame */
+      var startY = window.pageYOffset;
+      var startT = performance.now();
+      var dur    = duration || 480;
+
+      /* Target inicial lockeado para evitar jitter */
+      var initialRect = targetEl.getBoundingClientRect();
+      var destY = initialRect.top + startY - getTopOffset();
+      var maxY  = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      if (destY > maxY) destY = maxY;
+      if (destY < 0)    destY = 0;
+
+      var recalculatedOnce = false;
+
       function step(now){
-        if (userScrolled) { rafId = null; return; }
+        if (userScrolled){
+          rafId = null;
+          document.documentElement.classList.remove('is-scrolling');
+          return;
+        }
         var elapsed = now - startT;
         var t = Math.min(1, elapsed / dur);
-        var eased = easeInOutQuart(t);
+        var eased = easeOutQuint(t);
 
-        /* Recalcular target en vivo por si cambió la altura del documento */
-        var rect = targetEl.getBoundingClientRect();
-        var currentTop = rect.top + window.pageYOffset;
-        var destY = currentTop - getTopOffset();
-        /* Clamp al máximo scroll disponible */
-        var maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-        if (destY > maxY) destY = maxY;
-        if (destY < 0)    destY = 0;
+        /* Recalcular UNA sola vez a mitad de animación (por si cambió el layout) */
+        if (!recalculatedOnce && t > 0.5){
+          recalculatedOnce = true;
+          var r = targetEl.getBoundingClientRect();
+          var newDest = r.top + window.pageYOffset - getTopOffset();
+          var newMax = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+          if (newDest > newMax) newDest = newMax;
+          if (newDest < 0)      newDest = 0;
+          /* Solo reajustamos si el delta es significativo (>8px) */
+          if (Math.abs(newDest - destY) > 8) destY = newDest;
+        }
 
         var y = startY + (destY - startY) * eased;
         window.scrollTo(0, y);
@@ -2453,6 +2490,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
           rafId = requestAnimationFrame(step);
         } else {
           rafId = null;
+          document.documentElement.classList.remove('is-scrolling');
         }
       }
       rafId = requestAnimationFrame(step);
@@ -2719,6 +2757,23 @@ if ('serviceWorker' in navigator) {
     return { x: (vw - w) / 2, y: (vh - h) / 2, w: w, h: h };
   }
 
+  /* Close button anclado a la esquina superior-derecha de la foto.
+     Medio sobresale (offset -18/-18) para que sea fácil de tocar sin tapar contenido. */
+  function positionCloseBtn(rect){
+    if (!closeBtn) return;
+    var btnW = 38, offset = 14;
+    var mobile = window.innerWidth <= 640;
+    if (mobile){ btnW = 36; offset = 10; }
+    /* El botón queda centrado sobre la esquina top-right del stage */
+    var x = rect.x + rect.w - btnW/2 - offset;
+    var y = rect.y - btnW/2 + offset;
+    /* Clamp al viewport para que no se salga de pantalla */
+    x = Math.max(8, Math.min(x, window.innerWidth  - btnW - 8));
+    y = Math.max(8, Math.min(y, window.innerHeight - btnW - 8));
+    closeBtn.style.left = x + 'px';
+    closeBtn.style.top  = y + 'px';
+  }
+
   /* ── Kill switch — reset total si algo sale mal ────────────── */
   function killSwitch(){
     try { if (activeAnim) activeAnim.cancel(); } catch(_) {}
@@ -2785,6 +2840,9 @@ if ('serviceWorker' in navigator) {
       stage.style.width  = target.w + 'px';
       stage.style.height = target.h + 'px';
       stage.style.transformOrigin = '0 0';
+
+      /* Close button pegado a la esquina superior-derecha de la foto */
+      positionCloseBtn(target);
 
       var sx0 = rect.width  / target.w;
       var sy0 = rect.height / target.h;
@@ -2954,6 +3012,7 @@ if ('serviceWorker' in navigator) {
       stage.style.width  = target.w + 'px';
       stage.style.height = target.h + 'px';
       stage.style.transform = 'translate3d(' + target.x + 'px,' + target.y + 'px,0) scale(1,1)';
+      positionCloseBtn(target);
     });
   }, { passive: true });
 
