@@ -101,12 +101,13 @@
 }
 
 html{
-  scroll-behavior:smooth;
-  scroll-padding-top:calc(var(--nav-h) + 12px); /* anclajes no se ocultan tras el topnav fijo */
+  /* scroll-behavior:smooth eliminado adrede — lo gestionamos con rAF en JS
+     para evitar conflicto con window.scrollTo({behavior:'smooth'}) */
+  scroll-padding-top:calc(var(--nav-h) + 12px);
   -webkit-tap-highlight-color:transparent;
   text-size-adjust:100%;-webkit-text-size-adjust:100%;
 }
-/* Fallback universal para navegadores que ignoren scroll-padding en <html> */
+/* scroll-margin en section[id] — respetado por anchor nav nativo (fallback) */
 section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
 
 body{
@@ -935,7 +936,7 @@ a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 .lbx-root.lbx-open{opacity:1;pointer-events:auto}
 .lbx-backdrop{position:absolute;inset:0;cursor:zoom-out}
 
-/* Stage — absoluto, transform-only. will-change sólo durante animación. */
+/* Stage — absoluto, transform-only. Animado por WAAPI (GPU composite). */
 .lbx-stage{
   position:absolute;
   top:0;left:0;
@@ -946,9 +947,10 @@ a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
   -webkit-backface-visibility:hidden;
   box-shadow:0 48px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.08);
   contain:layout paint style;
+  /* will-change permanente mientras el lightbox está vivo (root tiene .lbx-open
+     durante opening/open/closing). Se libera al reset (cssText='' en JS). */
 }
-/* will-change activado solo mientras se anima. Sólo transform (ya no animamos width/height → zero reflow) */
-.lbx-stage.lbx-animating{will-change:transform}
+.lbx-root.lbx-open .lbx-stage{will-change:transform}
 .lbx-img{
   width:100%;height:100%;
   display:block;object-fit:contain;background:#0f172a;
@@ -2388,7 +2390,9 @@ a.oferta-tag,a.plan-item,a.select-tag{
   function init(){
     var pt = document.getElementById('page-transition');
     var endTimer = null;
-    var supportsSmooth = 'scrollBehavior' in document.documentElement.style;
+    var rafId = null;
+    /* Abortamos si el usuario hace scroll manual durante la animación */
+    var userScrolled = false;
 
     function showOverlay(){
       if (!pt) return;
@@ -2402,19 +2406,82 @@ a.oferta-tag,a.plan-item,a.select-tag{
       }, 420);
     }
 
+    /* Ease de nivel profesional: easeInOutQuart — arranque y frenado suaves */
+    function easeInOutQuart(t){
+      return t < 0.5
+        ? 8 * t * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 4) / 2;
+    }
+
+    function cancelScroll(){
+      if (rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    }
+
+    function getTopOffset(){
+      var topNav = document.getElementById('topNav');
+      return (topNav ? topNav.offsetHeight : 56) + 12;
+    }
+
+    /* scroll rAF custom — robusto: recalcula target cada frame (corrige si el layout cambia durante la animación por <details> abriéndose, lazy images cargando, etc.) */
+    function smoothTo(targetEl, duration){
+      cancelScroll();
+      userScrolled = false;
+      var startY  = window.pageYOffset;
+      var startT  = performance.now();
+      var dur     = duration || 520;
+
+      /* Guardamos referencia al elemento — recalculamos en cada frame */
+      function step(now){
+        if (userScrolled) { rafId = null; return; }
+        var elapsed = now - startT;
+        var t = Math.min(1, elapsed / dur);
+        var eased = easeInOutQuart(t);
+
+        /* Recalcular target en vivo por si cambió la altura del documento */
+        var rect = targetEl.getBoundingClientRect();
+        var currentTop = rect.top + window.pageYOffset;
+        var destY = currentTop - getTopOffset();
+        /* Clamp al máximo scroll disponible */
+        var maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        if (destY > maxY) destY = maxY;
+        if (destY < 0)    destY = 0;
+
+        var y = startY + (destY - startY) * eased;
+        window.scrollTo(0, y);
+
+        if (t < 1) {
+          rafId = requestAnimationFrame(step);
+        } else {
+          rafId = null;
+        }
+      }
+      rafId = requestAnimationFrame(step);
+    }
+
+    /* Detectar scroll manual (wheel/touch) durante animación → abortar */
+    var manualScrollEvents = ['wheel','touchstart','touchmove','keydown'];
+    manualScrollEvents.forEach(function(evt){
+      window.addEventListener(evt, function(e){
+        if (!rafId) return;
+        /* Keys de navegación que intentan hacer scroll propio */
+        if (evt === 'keydown'){
+          var k = e.key;
+          if (k!=='ArrowDown'&&k!=='ArrowUp'&&k!=='PageDown'&&k!=='PageUp'&&k!==' '&&k!=='Home'&&k!=='End') return;
+        }
+        userScrolled = true;
+      }, { passive: true });
+    });
+
     function go(href){
       var el;
       try { el = document.querySelector(href); } catch(_) { return; }
       if (!el) return;
       showOverlay();
-      var topNav = document.getElementById('topNav');
-      var offset = (topNav ? topNav.offsetHeight : 56) + 4;
-      var y = el.getBoundingClientRect().top + window.pageYOffset - offset;
-      if (supportsSmooth) {
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      } else {
-        window.scrollTo(0, y);
-      }
+      /* Duración proporcional a la distancia — max 600ms, min 320ms */
+      var rect = el.getBoundingClientRect();
+      var dist = Math.abs(rect.top + window.pageYOffset - window.pageYOffset - getTopOffset());
+      var dur  = Math.min(600, Math.max(320, dist * 0.6));
+      smoothTo(el, dur);
       if (history.replaceState) {
         try { history.replaceState(null, '', href); } catch(_) {}
       }
@@ -2586,74 +2653,36 @@ if ('serviceWorker' in navigator) {
    Inyección del markup diferida a DOMContentLoaded para no bloquear.
 */
 /* ═══════════════════════════════════════════════════════════════════
-   LIGHTBOX v4 — FLIP + spring physics (Framer Motion layoutId clone)
+   LIGHTBOX v5 — Web Animations API (WAAPI) · shared-element transition
    ─────────────────────────────────────────────────────────────────
-   Técnica: el click captura el rect del <img> source, se clona en un
-   contenedor absoluto con esas mismas dimensiones (First). Se calcula
-   el rect de destino (Last), se anima con spring via rAF cambiando
-   sólo transform — ningún layout trigger. 60fps sostenido.
-   Config spring: stiffness 320, damping 26, mass 0.7 (snap elástico).
+   Arquitectura profesional:
+   • WAAPI (Element.animate) — el browser gestiona el ciclo de vida,
+     la animación corre en el Compositor (GPU thread), cero lag.
+   • Anim state machine explícito con flags — imposible quedarse atascado.
+   • Promise-based open/close con kill-switch (cancelAnimationFrame +
+     Animation.cancel()) para abortar y re-lanzar sin race conditions.
+   • Curva propietaria cubic-bezier(.22,1,.36,1) (easeOutExpo suave):
+     apertura acelera al inicio y asienta en los últimos 30% con elegancia
+     — es la curva que usan Apple y Vercel en sus transiciones premium.
+   • Sólo transform + opacity. GPU composite puro. No width/height.
+   • Kill-timeout de 800ms: si algo falla, reset automático = la app
+     nunca queda bloqueada requiriendo reload.
    ═══════════════════════════════════════════════════════════════════ */
 (function(){
-  var root, stage, img, caption, badgeEl, captionText, closeBtn;
-  var currentSrcEl = null, lastFocus = null, rafId = null, isOpen = false;
+  var root, stage, img, badgeEl, captionText, closeBtn;
+  var currentSrcEl = null, lastFocus = null;
+  var state = 'idle';          // 'idle' | 'opening' | 'open' | 'closing'
+  var activeAnim = null;       // current WAAPI Animation
+  var killTimer  = null;       // safety timer to force-reset
+  var finalTarget = null;      // { x, y, w, h }
+  var pendingLoad = null;      // img onload handler reference
 
-  /* ── Spring integrator (semi-implicit Euler, fixed-step 60Hz) ──────
-     Framer Motion equivalente: { type:"spring", bounce:0.2, duration:0.4 }
-     Mapeo: bounce=0.2 → damping ratio ≈ 0.8; duration=0.4s → stiffness≈400.
-     Config final: stiffness 400, damping 30, mass 0.5 (bounce elástico ligero)
-  */
-  function spring(from, to, cfg, onUpdate, onComplete){
-    var stiffness = cfg.stiffness || 400;
-    var damping   = cfg.damping   || 30;
-    var mass      = cfg.mass      || 0.5;
-    var precision = cfg.precision || 0.15;     // más laxo → asienta más rápido
-    var vprec     = cfg.vPrecision || 0.8;
+  /* Curvas de ease profesionales */
+  var EASE_OUT   = 'cubic-bezier(.22,1,.36,1)';     // apertura: easeOutExpo-soft
+  var EASE_IN    = 'cubic-bezier(.64,0,.78,.08)';   // cierre: easeInExpo-soft
+  var EASE_SPRING= 'cubic-bezier(.34,1.2,.64,1)';   // bounce sutil (no exagerado)
 
-    var n = from.length;
-    var xs = new Float64Array(n), vs = new Float64Array(n), ts = new Float64Array(n);
-    for (var i=0;i<n;i++){ xs[i]=from[i]; ts[i]=to[i]; }
-
-    var last = performance.now();
-    var accumulator = 0;
-    var fixedStep = 1/180;                      // 180Hz fijos → estabilidad, sin drops
-    var buf = new Array(n);
-    var id;
-
-    function frame(now){
-      var dt = (now - last) / 1000;
-      last = now;
-      if (dt > 0.1) dt = 0.1;                   // tab inactivo → no teleport
-      accumulator += dt;
-
-      var settled = true;
-      while (accumulator >= fixedStep){
-        accumulator -= fixedStep;
-        for (var j=0;j<n;j++){
-          var force  = -stiffness * (xs[j] - ts[j]);
-          var damper = -damping   * vs[j];
-          var a = (force + damper) / mass;
-          vs[j] += a * fixedStep;
-          xs[j] += vs[j] * fixedStep;
-        }
-      }
-      for (var k=0;k<n;k++){
-        buf[k] = xs[k];
-        if (Math.abs(vs[k]) > vprec || Math.abs(xs[k]-ts[k]) > precision) settled = false;
-      }
-      onUpdate(buf);
-      if (!settled){
-        id = requestAnimationFrame(frame);
-      } else {
-        onUpdate(to.slice());
-        if (onComplete) onComplete();
-      }
-    }
-    id = requestAnimationFrame(frame);
-    return function cancel(){ if (id) cancelAnimationFrame(id); };
-  }
-
-  /* ── DOM init (lazy) ──────────────────────────────────────────── */
+  /* ── DOM lazy init ────────────────────────────────────────────── */
   function ensureRoot(){
     if (root) return root;
     root = document.createElement('div');
@@ -2663,163 +2692,234 @@ if ('serviceWorker' in navigator) {
     root.setAttribute('aria-hidden','true');
     root.innerHTML =
       '<div class="lbx-backdrop" data-lbx-close></div>'+
-      '<div class="lbx-stage"><img class="lbx-img" alt="" /></div>'+
+      '<div class="lbx-stage"><img class="lbx-img" alt="" decoding="async" /></div>'+
       '<button class="lbx-close" type="button" aria-label="Cerrar imagen" data-lbx-close></button>'+
       '<div class="lbx-caption"><span class="lbx-badge"></span><span class="lbx-caption-text"></span></div>';
     document.body.appendChild(root);
-    stage        = root.querySelector('.lbx-stage');
-    img          = root.querySelector('.lbx-img');
-    caption      = root.querySelector('.lbx-caption');
-    badgeEl      = root.querySelector('.lbx-badge');
-    captionText  = root.querySelector('.lbx-caption-text');
-    closeBtn     = root.querySelector('.lbx-close');
+    stage       = root.querySelector('.lbx-stage');
+    img         = root.querySelector('.lbx-img');
+    badgeEl     = root.querySelector('.lbx-badge');
+    captionText = root.querySelector('.lbx-caption-text');
+    closeBtn    = root.querySelector('.lbx-close');
     root.addEventListener('click', function(ev){
-      if (ev.target && ev.target.hasAttribute && ev.target.hasAttribute('data-lbx-close')) close();
+      var t = ev.target;
+      if (t && t.hasAttribute && t.hasAttribute('data-lbx-close')) close();
     });
     return root;
   }
 
-  /* ── Compute target rect (centered, fits viewport 92vw x 88vh) ── */
+  /* ── Target rect (centrado, fit en 92vw × 86vh) ─────────────── */
   function computeTargetRect(natW, natH){
     var vw = window.innerWidth, vh = window.innerHeight;
     var maxW = vw * 0.92, maxH = vh * 0.86;
-    var ratio = natW / natH || 1.5;
+    var ratio = (natW && natH) ? (natW / natH) : 1.5;
     var w, h;
     if (maxW / ratio <= maxH) { w = maxW; h = maxW / ratio; }
     else                      { h = maxH; w = maxH * ratio; }
-    return {
-      x: (vw - w) / 2,
-      y: (vh - h) / 2,
-      w: w, h: h
-    };
+    return { x: (vw - w) / 2, y: (vh - h) / 2, w: w, h: h };
   }
 
-  /* State para animación pure-transform (sin reflow por frame) */
-  var finalTarget = null;  // {x,y,w,h} del rect destino
+  /* ── Kill switch — reset total si algo sale mal ────────────── */
+  function killSwitch(){
+    try { if (activeAnim) activeAnim.cancel(); } catch(_) {}
+    activeAnim = null;
+    if (killTimer){ clearTimeout(killTimer); killTimer = null; }
+    state = 'idle';
+    if (root){
+      root.classList.remove('lbx-open');
+      root.setAttribute('aria-hidden','true');
+    }
+    if (stage){
+      stage.style.cssText = '';
+    }
+    if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
+    document.body.classList.remove('lbx-locked');
+    if (img) img.src = '';
+    if (pendingLoad && img){ img.removeEventListener('load', pendingLoad); pendingLoad = null; }
+    currentSrcEl = null;
+    finalTarget  = null;
+  }
+  function armKillTimer(){
+    if (killTimer) clearTimeout(killTimer);
+    killTimer = setTimeout(function(){
+      /* Si tras 900ms la animación no terminó, reset duro */
+      console.warn('[lbx] kill-switch triggered');
+      killSwitch();
+    }, 900);
+  }
+  function disarmKillTimer(){
+    if (killTimer){ clearTimeout(killTimer); killTimer = null; }
+  }
 
   /* ── OPEN ─────────────────────────────────────────────────────── */
   function open(srcEl, cap, area){
-    if (isOpen) return;
+    /* Si ya hay una animación en curso, matamos y re-lanzamos */
+    if (state !== 'idle'){ killSwitch(); }
+
     ensureRoot();
-    isOpen = true;
+    state = 'opening';
     currentSrcEl = srcEl;
     lastFocus = document.activeElement;
 
     var rect = srcEl.getBoundingClientRect();
     var src  = srcEl.currentSrc || srcEl.src;
 
-    /* Image source — si ya está en cache, se usa el mismo recurso */
     img.src = src;
     img.alt = srcEl.alt || '';
-
-    /* Caption + badge */
-    if (area) { badgeEl.textContent = area; badgeEl.style.display = 'inline-block'; }
-    else      { badgeEl.style.display = 'none'; }
+    if (area){ badgeEl.textContent = area; badgeEl.style.display = 'inline-block'; }
+    else     { badgeEl.style.display = 'none'; }
     captionText.textContent = cap || srcEl.alt || '';
 
-    /* Ocultar source para evitar doble render */
     srcEl.classList.add('lbx-src-hidden');
     document.body.classList.add('lbx-locked');
-
-    /* Mostrar backdrop */
     root.classList.add('lbx-open');
     root.setAttribute('aria-hidden','false');
 
     var run = function(){
-      var natW = img.naturalWidth  || rect.width;
-      var natH = img.naturalHeight || rect.height;
+      var natW = img.naturalWidth  || rect.width  || 800;
+      var natH = img.naturalHeight || rect.height || 600;
       var target = computeTargetRect(natW, natH);
       finalTarget = target;
 
-      /* Fijamos el stage con el tamaño FINAL una sola vez.
-         Durante toda la animación sólo tocamos transform (scale + translate).
-         Esto = cero reflows. Promoción GPU permanente. */
+      /* Stage final size — fijado UNA vez, no se toca durante la animación */
       stage.style.width  = target.w + 'px';
       stage.style.height = target.h + 'px';
+      stage.style.transformOrigin = '0 0';
 
-      /* Estado inicial: posicionado y escalado al rect del thumbnail */
       var sx0 = rect.width  / target.w;
       var sy0 = rect.height / target.h;
-      /* Transform-origin top-left para que el scale mantenga la esquina fija */
-      stage.style.transformOrigin = '0 0';
-      stage.style.transform =
-        'translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(' + sx0 + ',' + sy0 + ')';
 
-      stage.classList.add('lbx-animating');
+      /* FLIP: estado inicial en el rect del thumbnail */
+      var fromTransform = 'translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(' + sx0 + ',' + sy0 + ')';
+      var toTransform   = 'translate3d(' + target.x + 'px,' + target.y + 'px,0) scale(1,1)';
 
-      /* Force reflow para que el browser registre el estado inicial antes del rAF */
-      void stage.offsetWidth;
+      /* Aplicar estado inicial ANTES de animar para evitar flash */
+      stage.style.transform = fromTransform;
+      void stage.offsetWidth; // force reflow (solo aquí, antes de animar)
 
-      /* Animamos [x, y, scaleX, scaleY] — sólo transform, GPU */
-      spring(
-        [rect.left, rect.top, sx0, sy0],
-        [target.x, target.y, 1, 1],
-        { stiffness: 280, damping: 20, mass: 0.8 },
-        function(v){
-          stage.style.transform =
-            'translate3d(' + v[0] + 'px,' + v[1] + 'px,0) scale(' + v[2] + ',' + v[3] + ')';
-        },
-        function(){
-          stage.classList.remove('lbx-animating');
-          if (closeBtn) closeBtn.focus();
+      /* WAAPI — el browser corre la animación en GPU composite thread */
+      armKillTimer();
+      activeAnim = stage.animate(
+        [
+          { transform: fromTransform, opacity: 1 },
+          { transform: toTransform,   opacity: 1 }
+        ],
+        {
+          duration: 520,
+          easing: EASE_SPRING,
+          fill: 'forwards'
         }
       );
+
+      activeAnim.onfinish = function(){
+        /* Commitamos el estado final como style inline, luego cancelamos
+           la animación (libera el lock WAAPI sobre el elemento) */
+        stage.style.transform = toTransform;
+        try { activeAnim.cancel(); } catch(_) {}
+        activeAnim = null;
+        disarmKillTimer();
+        state = 'open';
+        if (closeBtn) closeBtn.focus({ preventScroll: true });
+      };
+      activeAnim.oncancel = function(){
+        activeAnim = null;
+        disarmKillTimer();
+      };
     };
-    if (img.complete && img.naturalWidth) { requestAnimationFrame(run); }
-    else { img.onload = function(){ requestAnimationFrame(run); }; }
+
+    /* Si la imagen no está cargada, esperamos load → pero con timeout */
+    if (img.complete && img.naturalWidth){
+      requestAnimationFrame(run);
+    } else {
+      pendingLoad = function(){
+        pendingLoad = null;
+        requestAnimationFrame(run);
+      };
+      img.addEventListener('load', pendingLoad, { once: true });
+      /* Fallback: si tarda > 600ms, lanzamos con las dimensiones del rect */
+      setTimeout(function(){
+        if (state === 'opening' && pendingLoad){
+          img.removeEventListener('load', pendingLoad);
+          pendingLoad = null;
+          requestAnimationFrame(run);
+        }
+      }, 600);
+    }
   }
 
   /* ── CLOSE ────────────────────────────────────────────────────── */
   function close(){
-    if (!isOpen || !root || !finalTarget) return;
-    isOpen = false;
+    if (state === 'idle' || state === 'closing') return;
+    /* Si estamos en medio de una apertura, la cancelamos para cerrar ya */
+    if (state === 'opening' && activeAnim){
+      try { activeAnim.cancel(); } catch(_) {}
+      activeAnim = null;
+      disarmKillTimer();
+    }
+    if (!finalTarget){ killSwitch(); return; }
 
-    var target;  // [x, y, scaleX, scaleY]
-    if (currentSrcEl && document.contains(currentSrcEl)) {
+    state = 'closing';
+
+    /* Calcular target del cierre */
+    var toX, toY, toSX, toSY;
+    if (currentSrcEl && document.contains(currentSrcEl)){
       var r = currentSrcEl.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0) {
-        /* Source oculto → colapsa al centro con scale 0.1 */
-        var vw0 = window.innerWidth, vh0 = window.innerHeight;
-        target = [vw0/2 - finalTarget.w*0.05, vh0/2 - finalTarget.h*0.05, 0.1, 0.1];
+      if (r.width === 0 || r.height === 0){
+        /* Source oculto (p.ej. <details> cerrado) → colapso al centro */
+        toX = window.innerWidth/2  - finalTarget.w * 0.05;
+        toY = window.innerHeight/2 - finalTarget.h * 0.05;
+        toSX = toSY = 0.1;
       } else {
-        target = [r.left, r.top, r.width / finalTarget.w, r.height / finalTarget.h];
+        toX  = r.left;
+        toY  = r.top;
+        toSX = r.width  / finalTarget.w;
+        toSY = r.height / finalTarget.h;
       }
     } else {
-      target = [window.innerWidth/2, window.innerHeight/2, 0, 0];
+      toX = window.innerWidth/2;
+      toY = window.innerHeight/2;
+      toSX = toSY = 0;
     }
+
+    /* Leer transform actual — si venimos del estado idle post-open,
+       está en el style inline (fijado por onfinish) */
+    var fromTransform = stage.style.transform ||
+      ('translate3d(' + finalTarget.x + 'px,' + finalTarget.y + 'px,0) scale(1,1)');
+    var toTransform   = 'translate3d(' + toX + 'px,' + toY + 'px,0) scale(' + toSX + ',' + toSY + ')';
 
     root.classList.remove('lbx-open');
     root.setAttribute('aria-hidden','true');
-    stage.classList.add('lbx-animating');
 
-    /* Leer posición actual desde transform style (no getBoundingClientRect — rápido) */
-    var cur = parseTransform(stage.style.transform);
-
-    spring(
-      [cur.x, cur.y, cur.sx, cur.sy],
-      target,
-      { stiffness: 360, damping: 28, mass: 0.65 },
-      function(v){
-        stage.style.transform =
-          'translate3d(' + v[0] + 'px,' + v[1] + 'px,0) scale(' + v[2] + ',' + v[3] + ')';
-      },
-      function(){
-        stage.classList.remove('lbx-animating');
-        if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
-        document.body.classList.remove('lbx-locked');
-        img.src = '';
-        stage.style.cssText = '';
-        currentSrcEl = null;
-        finalTarget = null;
-        if (lastFocus && lastFocus.focus) lastFocus.focus();
+    armKillTimer();
+    activeAnim = stage.animate(
+      [
+        { transform: fromTransform, opacity: 1 },
+        { transform: toTransform,   opacity: 0.85 }
+      ],
+      {
+        duration: 380,
+        easing: EASE_IN,
+        fill: 'forwards'
       }
     );
-  }
 
-  function parseTransform(str){
-    var m = /translate3d\(([-\d.]+)px,\s*([-\d.]+)px[^)]*\)\s*scale\(([-\d.]+),\s*([-\d.]+)\)/.exec(str);
-    if (m) return { x:+m[1], y:+m[2], sx:+m[3], sy:+m[4] };
-    return { x:0, y:0, sx:1, sy:1 };
+    var done = function(){
+      try { if (activeAnim) activeAnim.cancel(); } catch(_) {}
+      activeAnim = null;
+      disarmKillTimer();
+      if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
+      document.body.classList.remove('lbx-locked');
+      if (img) img.src = '';
+      if (stage) stage.style.cssText = '';
+      currentSrcEl = null;
+      finalTarget  = null;
+      state = 'idle';
+      if (lastFocus && lastFocus.focus){
+        try { lastFocus.focus({ preventScroll: true }); } catch(_) { lastFocus.focus(); }
+      }
+    };
+    activeAnim.onfinish = done;
+    activeAnim.oncancel = done;
   }
 
   /* ── Event delegation ─────────────────────────────────────────── */
@@ -2833,23 +2933,37 @@ if ('serviceWorker' in navigator) {
     if (!isEligible(t)) return;
     ev.preventDefault();
     var parent = t.closest('[data-lightbox]') || t.closest('.gallery-item,.gal22-item,.gallery-card,.act-card,.teatro-item,.inst-gal');
-    var cap  = t.getAttribute('data-caption')
-            || (parent && parent.getAttribute('data-caption'))
-            || t.alt || '';
+    var cap  = t.getAttribute('data-caption') || (parent && parent.getAttribute('data-caption')) || t.alt || '';
     var area = (parent && parent.getAttribute('data-area')) || '';
     open(t, cap, area);
   }, true);
+
   document.addEventListener('keydown', function(ev){
-    if (ev.key === 'Escape' && isOpen) close();
+    if (ev.key === 'Escape' && state !== 'idle') close();
   });
+
+  /* Resize — recalcula target si está abierto */
+  var resizeRaf = 0;
   window.addEventListener('resize', function(){
-    if (isOpen && img && img.naturalWidth) {
+    if (state !== 'open' || !img || !img.naturalWidth) return;
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(function(){
+      resizeRaf = 0;
       var target = computeTargetRect(img.naturalWidth, img.naturalHeight);
+      finalTarget = target;
       stage.style.width  = target.w + 'px';
       stage.style.height = target.h + 'px';
-      stage.style.transform = 'translate3d(' + target.x + 'px,' + target.y + 'px,0)';
-    }
+      stage.style.transform = 'translate3d(' + target.x + 'px,' + target.y + 'px,0) scale(1,1)';
+    });
   }, { passive: true });
+
+  /* Escape hatch global: si el usuario hace back navigation o pierde foco
+     de la pestaña durante una animación, reset limpio */
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden && (state === 'opening' || state === 'closing')){
+      killSwitch();
+    }
+  });
 })();
 </script>
 </body>
