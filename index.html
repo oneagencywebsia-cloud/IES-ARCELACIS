@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" dir="ltr">
 <head>
 <meta charset="UTF-8">
@@ -934,39 +934,68 @@ a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
    60fps real · sólo transform/opacity (GPU) · sin reflows
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Backdrop — anima SOLO opacity (no backdrop-filter, que causa lag) */
+/* Backdrop — visibility+opacity en lugar de contain:strict.
+   contain:strict creaba un paint-boundary que forzaba repaint completo
+   al final de la animación WAAPI del stage → frame blanco en móvil. */
 .lbx-root{
   position:fixed;inset:0;z-index:100000;
   background:rgba(4,8,20,.94);
   opacity:0;pointer-events:none;
-  transition:opacity 260ms cubic-bezier(.4,0,.2,1);
-  contain:strict;
+  visibility:hidden;
+  /* GPU layer explícito — evita repaint en iOS WebKit al mostrar/ocultar */
+  -webkit-transform:translate3d(0,0,0);
+  transform:translate3d(0,0,0);
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
+  transition:opacity 280ms cubic-bezier(.4,0,.2,1),
+             visibility 0ms linear 280ms;
 }
-.lbx-root.lbx-open{opacity:1;pointer-events:auto}
+.lbx-root.lbx-open{
+  opacity:1;pointer-events:auto;visibility:visible;
+  transition:opacity 280ms cubic-bezier(.4,0,.2,1),
+             visibility 0ms linear 0ms;
+}
 .lbx-backdrop{position:absolute;inset:0;cursor:zoom-out}
 
-/* Stage — absoluto, transform-only. Animado por WAAPI (GPU composite). */
+/* Stage — sin contain propio para no crear stacking context adicional.
+   El root ya lo aísla del resto del DOM. will-change solo vía JS. */
 .lbx-stage{
   position:absolute;
   top:0;left:0;
   width:0;height:0;
   border-radius:14px;
   overflow:hidden;
-  backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
-  box-shadow:0 48px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.08);
-  contain:layout paint style;
-  /* will-change permanente mientras el lightbox está vivo (root tiene .lbx-open
-     durante opening/open/closing). Se libera al reset (cssText='' en JS). */
+  backface-visibility:hidden;
+  -webkit-transform:translate3d(0,0,0);
+  box-shadow:0 32px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.07);
 }
-.lbx-root.lbx-open .lbx-stage{will-change:transform}
+.lbx-stage.lbx-animating{ will-change:transform; }
+
+/* Imagen SIEMPRE opaca — el stage es quien anima opacity vía WAAPI.
+   Eliminar opacity:0/transition aquí corta el segundo canal de opacity
+   que causaba el artefacto visual al quitar lbx-loaded durante el cierre. */
 .lbx-img{
   width:100%;height:100%;
-  display:block;object-fit:contain;background:#0f172a;
-  transform:translate3d(0,0,0);
-  backface-visibility:hidden;
+  display:block;object-fit:contain;
+  background:#0a0f1e;
   -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
+  -webkit-transform:translate3d(0,0,0);
+  transform:translate3d(0,0,0);
+  opacity:1;
 }
+
+/* Shimmer estático — indica carga sin crear compositor layer adicional */
+.lbx-stage::after{
+  content:'';
+  position:absolute;inset:0;z-index:1;
+  background:linear-gradient(100deg,
+    transparent 20%,rgba(255,255,255,.05) 50%,transparent 80%);
+  opacity:1;transition:opacity 180ms ease;
+  pointer-events:none;border-radius:inherit;
+}
+.lbx-stage.lbx-loaded::after{ opacity:0; }
 
 /* Source hidden mientras anima — opacity 0 aplica en compositor (sin reflow/paint)
    visibility:hidden forzaba un frame de style recalc → parpadeo visible */
@@ -1002,36 +1031,67 @@ a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 .lbx-close:active{transform:scale(.92) rotate(0)}
 .lbx-close:focus-visible{outline:2px solid #60a5fa;outline-offset:3px}
 
-/* Caption + badge — overlay premium */
+/* Caption + badge — overlay premium, INDEPENDIENTE del stage/scale */
 .lbx-caption{
-  position:fixed;left:50%;bottom:28px;
-  transform:translate3d(-50%,12px,0);
-  max-width:min(92vw,880px);
-  padding:8px 18px;
-  background:rgba(15,23,42,.72);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:100px;
-  color:#e2e8f0;font-size:.88rem;font-weight:500;
+  position:fixed;
+  left:50%;
+  bottom:30px;
+  /* iOS safe area: padding-bottom compensa la barra de inicio */
+  padding:12px 24px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  transform:translate3d(-50%,20px,0);
+  max-width:min(88vw,720px);
+  width:max-content;
+  background:rgba(0,0,0,.80);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+  border-radius:20px;
+  color:#fff;
+  font-size:.875rem;
+  font-weight:500;
+  line-height:1.6;
   text-align:center;
-  opacity:0;z-index:100001;pointer-events:none;
+  letter-spacing:.01em;
+  white-space:normal;
+  word-break:break-word;
+  opacity:0;
+  z-index:100003;
+  pointer-events:none;
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
   transition:
-    opacity 260ms cubic-bezier(.4,0,.2,1) 280ms,
-    transform 380ms cubic-bezier(.34,1.56,.64,1) 280ms;
+    opacity 240ms cubic-bezier(.4,0,.2,1) 260ms,
+    transform 320ms cubic-bezier(.34,1.4,.64,1) 260ms;
 }
-.lbx-root.lbx-open .lbx-caption{opacity:1;transform:translate3d(-50%,0,0)}
+.lbx-root.lbx-open .lbx-caption{
+  opacity:1;
+  transform:translate3d(-50%,0,0);
+}
 
 .lbx-badge{
-  display:inline-block;margin-right:10px;
-  padding:2px 10px;
-  background:rgba(59,130,246,.22);border:1px solid rgba(59,130,246,.34);
-  border-radius:100px;color:#93c5fd;
-  font-size:.68rem;font-weight:700;
-  letter-spacing:.05em;text-transform:uppercase;
+  display:inline-block;
+  margin-right:8px;
+  margin-bottom:2px;
+  padding:3px 11px;
+  background:rgba(59,130,246,.25);
+  border:1px solid rgba(59,130,246,.40);
+  border-radius:100px;
+  color:#93c5fd;
+  font-size:.7rem;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
   vertical-align:middle;
+  white-space:nowrap;
 }
 
 img[data-lightbox]{cursor:zoom-in}
-body.lbx-locked{overflow:hidden}
+body.lbx-locked{
+  overflow:hidden;
+  position:fixed;
+  width:100%;
+  /* top fijado vía JS — preserva posición de scroll en iOS WebKit */
+}
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion:reduce){
@@ -1039,15 +1099,27 @@ body.lbx-locked{overflow:hidden}
 }
 
 @media (max-width:640px){
-  .lbx-close{width:36px;height:36px}
-  .lbx-caption{bottom:18px;font-size:.8rem;padding:6px 14px}
+  .lbx-close{width:40px;height:40px}
+  .lbx-caption{
+    max-width:calc(100vw - 32px);
+    width:calc(100vw - 32px);
+    left:16px;
+    transform:translate3d(0,20px,0);
+    border-radius:16px;
+    padding:10px 16px;
+    padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+    font-size:.82rem;
+  }
+  .lbx-root.lbx-open .lbx-caption{
+    transform:translate3d(0,0,0);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
    V22 — GALERÍA INSTALACIONES EXPANDIDA (masonry-style grid)
    ═══════════════════════════════════════════════════════════════════ */
 .gal22{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:20px}
-.gal22-item{position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.12);cursor:zoom-in;isolation:isolate;transform:translateZ(0);will-change:transform}
+.gal22-item{position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.12);cursor:zoom-in;isolation:isolate;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .gal22-item img{width:100%;height:100%;object-fit:cover;transition:transform 520ms var(--ease-out-expo),filter 320ms ease}
 .gal22-item::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(4,8,20,.78) 100%);opacity:0;transition:opacity 280ms ease;pointer-events:none}
 .gal22-item .gal22-label{position:absolute;left:12px;right:12px;bottom:10px;color:#fff;font-weight:600;font-size:.88rem;text-shadow:0 1px 3px rgba(0,0,0,.6);opacity:0;transform:translateY(10px);transition:opacity 280ms ease,transform 280ms ease;z-index:1}
@@ -1698,77 +1770,77 @@ a.oferta-tag,a.plan-item,a.select-tag{
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">💻</div><div><div class="inst-name">Aula TIC</div><div class="inst-desc">Dpto. Informática · TDE</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/tic.jpg" alt="Aula TIC" loading="lazy" data-caption="Aula TIC · Dpto. Informática" decoding="async">
-        <img src="img/galeria/tic-aula.jpg" alt="Aula TIC — vista del aula" loading="lazy" data-caption="Aula TIC — vista del aula" decoding="async">
+        <img src="img/galeria/tic.webp" alt="Aula TIC" loading="lazy" data-caption="Aula TIC · Dpto. Informática" decoding="async">
+        <img src="img/galeria/tic-aula.webp" alt="Aula TIC — vista del aula" loading="lazy" data-caption="Aula TIC — vista del aula" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🎨</div><div><div class="inst-name">Aula de Dibujo</div><div class="inst-desc">Dpto. Dibujo y Expresión Plástica</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/dibujo.jpg" alt="Aula de Dibujo" loading="lazy" data-caption="Aula de Dibujo · Dpto. EPV" decoding="async">
-        <img src="img/galeria/dibujo-2.jpg" alt="Trabajos artísticos" loading="lazy" data-caption="Trabajos artísticos del alumnado" decoding="async">
+        <img src="img/galeria/dibujo.webp" alt="Aula de Dibujo" loading="lazy" data-caption="Aula de Dibujo · Dpto. EPV" decoding="async">
+        <img src="img/galeria/dibujo-2.webp" alt="Trabajos artísticos" loading="lazy" data-caption="Trabajos artísticos del alumnado" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🔧</div><div><div class="inst-name">Taller de Tecnología / FPB</div><div class="inst-desc">Dpto. Tecnología · FPB Electricidad y Electrónica</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/fp-electricidad.jpg" alt="Taller FPB Electricidad" loading="lazy" data-caption="Taller FPB Electricidad · Dpto. Tecnología" decoding="async">
-        <img src="img/galeria/fp-instalacion.jpg" alt="Prácticas de instalación FPB" loading="lazy" data-caption="Prácticas de instalación eléctrica" decoding="async">
+        <img src="img/galeria/fp-electricidad.webp" alt="Taller FPB Electricidad" loading="lazy" data-caption="Taller FPB Electricidad · Dpto. Tecnología" decoding="async">
+        <img src="img/galeria/fp-instalacion.webp" alt="Prácticas de instalación FPB" loading="lazy" data-caption="Prácticas de instalación eléctrica" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🎭</div><div><div class="inst-name">SUM · Salón de Usos Múltiples</div><div class="inst-desc">Dpto. Música · Producciones teatrales (Jorge Illanes)</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/sum.jpg" alt="Salón de Usos Múltiples (SUM)" loading="lazy" data-caption="SUM — Salón de Usos Múltiples · Producciones teatrales" decoding="async">
+        <img src="img/galeria/sum.webp" alt="Salón de Usos Múltiples (SUM)" loading="lazy" data-caption="SUM — Salón de Usos Múltiples · Producciones teatrales" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🏋️</div><div><div class="inst-name">Gimnasio</div><div class="inst-desc">Dpto. Ed. Física · Espacio cubierto para prácticas deportivas</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/gimnasio.jpg" alt="Gimnasio del centro" loading="lazy" data-caption="Gimnasio · Dpto. de Educación Física" decoding="async">
-        <img src="img/galeria/gimnasio-2.jpg" alt="Gimnasio — interior" loading="lazy" data-caption="Gimnasio — interior" decoding="async">
-        <img src="img/galeria/gimnasio-3.jpg" alt="Gimnasio — zona deportiva" loading="lazy" data-caption="Gimnasio — zona deportiva" decoding="async">
+        <img src="img/galeria/gimnasio.webp" alt="Gimnasio del centro" loading="lazy" data-caption="Gimnasio · Dpto. de Educación Física" decoding="async">
+        <img src="img/galeria/gimnasio-2.webp" alt="Gimnasio — interior" loading="lazy" data-caption="Gimnasio — interior" decoding="async">
+        <img src="img/galeria/gimnasio-3.webp" alt="Gimnasio — zona deportiva" loading="lazy" data-caption="Gimnasio — zona deportiva" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🌳</div><div><div class="inst-name">Patio</div><div class="inst-desc">Zona central del centro, convivencia y actos</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/patio.jpg" alt="Patio del instituto IES Arcelacis" loading="lazy" data-caption="Patio del instituto IES Arcelacis" decoding="async">
+        <img src="img/galeria/patio.webp" alt="Patio del instituto IES Arcelacis" loading="lazy" data-caption="Patio del instituto IES Arcelacis" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🧩</div><div><div class="inst-name">Aula FBO</div><div class="inst-desc">Formación Básica Obligatoria — atención personalizada</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/fbo-aula.jpg" alt="Aula de Formación Básica Obligatoria (FBO)" loading="lazy" data-caption="Aula de Formación Básica Obligatoria (FBO)" decoding="async">
-        <img src="img/galeria/fbo-taller.jpg" alt="Taller de FBO — prácticas" loading="lazy" data-caption="Taller de FBO — prácticas" decoding="async">
+        <img src="img/galeria/fbo-aula.webp" alt="Aula de Formación Básica Obligatoria (FBO)" loading="lazy" data-caption="Aula de Formación Básica Obligatoria (FBO)" decoding="async">
+        <img src="img/galeria/fbo-taller.webp" alt="Taller de FBO — prácticas" loading="lazy" data-caption="Taller de FBO — prácticas" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🌱</div><div><div class="inst-name">Huerto escolar</div><div class="inst-desc">Dpto. Biología · Proyecto ALDEA (educación ambiental)</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/huerto.jpg" alt="Huerto escolar" loading="lazy" data-caption="Huerto escolar · Dpto. Biología" decoding="async">
-        <img src="img/galeria/huerto-2.jpg" alt="Huerto — zona de cultivo" loading="lazy" data-caption="Huerto — zona de cultivo" decoding="async">
+        <img src="img/galeria/huerto.webp" alt="Huerto escolar" loading="lazy" data-caption="Huerto escolar · Dpto. Biología" decoding="async">
+        <img src="img/galeria/huerto-2.webp" alt="Huerto — zona de cultivo" loading="lazy" data-caption="Huerto — zona de cultivo" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">☕</div><div><div class="inst-name">Cafetería</div><div class="inst-desc">Zona de descanso y servicio al alumnado</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/cafeteria.jpg" alt="Cafetería del centro" loading="lazy" data-caption="Cafetería del centro" decoding="async">
-        <img src="img/galeria/cafeteria-2.jpg" alt="Cafetería — zona de mesas" loading="lazy" data-caption="Cafetería — zona de mesas" decoding="async">
+        <img src="img/galeria/cafeteria.webp" alt="Cafetería del centro" loading="lazy" data-caption="Cafetería del centro" decoding="async">
+        <img src="img/galeria/cafeteria-2.webp" alt="Cafetería — zona de mesas" loading="lazy" data-caption="Cafetería — zona de mesas" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🚻</div><div><div class="inst-name">Aseos</div><div class="inst-desc">Instalaciones sanitarias del centro</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/banos.jpg" alt="Instalaciones sanitarias del centro" loading="lazy" data-caption="Instalaciones sanitarias del centro" decoding="async">
+        <img src="img/galeria/banos.webp" alt="Instalaciones sanitarias del centro" loading="lazy" data-caption="Instalaciones sanitarias del centro" decoding="async">
       </div>
     </details>
     <details class="inst-item fade-up">
       <summary><div class="inst-icon">🎪</div><div><div class="inst-name">Actividades extraescolares</div><div class="inst-desc">Convivencia y jornadas del alumnado</div></div><span class="inst-chev" aria-hidden="true">▾</span></summary>
       <div class="inst-gal">
-        <img src="img/galeria/actividades.jpg" alt="Actividades extraescolares — jornada 20/04" loading="lazy" data-caption="Actividades extraescolares — jornada 20/04" decoding="async">
-        <img src="img/galeria/actividades-2.jpg" alt="Actividades extraescolares — convivencia" loading="lazy" data-caption="Actividades extraescolares — convivencia" decoding="async">
-        <img src="img/galeria/actividades-3.jpg" alt="Actividad compartida en Instagram" loading="lazy" data-caption="Actividad compartida en Instagram" decoding="async">
+        <img src="img/galeria/actividades.webp" alt="Actividades extraescolares — jornada 20/04" loading="lazy" data-caption="Actividades extraescolares — jornada 20/04" decoding="async">
+        <img src="img/galeria/actividades-2.webp" alt="Actividades extraescolares — convivencia" loading="lazy" data-caption="Actividades extraescolares — convivencia" decoding="async">
+        <img src="img/galeria/actividades-3.webp" alt="Actividad compartida en Instagram" loading="lazy" data-caption="Actividad compartida en Instagram" decoding="async">
       </div>
     </details>
   </div>
@@ -2160,21 +2232,21 @@ a.oferta-tag,a.plan-item,a.select-tag{
   });
 
   if (sectionMap.length) {
-    let navTick = false;
-    const updateActiveNav = () => {
-      const y = window.scrollY + window.innerHeight * 0.35;
-      let current = sectionMap[0];
-      for (const s of sectionMap) {
-        if (s.el.offsetTop <= y) current = s;
-      }
+    /* IntersectionObserver — cero offsetTop reads en scroll, cero rAF overhead */
+    let activeSection = sectionMap[0].el;
+    const setActive = (el) => {
+      activeSection = el;
       navItems.forEach(i => i.classList.remove('active'));
-      current.item.classList.add('active');
-      navTick = false;
+      const match = sectionMap.find(s => s.el === el);
+      if (match) match.item.classList.add('active');
     };
-    window.addEventListener('scroll', () => {
-      if (!navTick) { requestAnimationFrame(updateActiveNav); navTick = true; }
-    }, { passive: true });
-    updateActiveNav();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) setActive(entry.target);
+      });
+    }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
+    sectionMap.forEach(s => io.observe(s.el));
+    setActive(sectionMap[0].el);
   }
 
   /* ============================================================
@@ -2289,12 +2361,15 @@ a.oferta-tag,a.plan-item,a.select-tag{
      press; this closes the gap for the PWA experience.
   ============================================================ */
   function createRipple(el, e) {
+    /* Máx 2 ripples simultáneos por elemento — evita acumulación de nodos bajo spam */
+    if (el.querySelectorAll('span[data-ripple]').length >= 2) return;
     const rect = el.getBoundingClientRect();
     const size = Math.max(rect.width, rect.height) * 1.6;
     const x = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX) - rect.left - size / 2;
     const y = (e.changedTouches ? e.changedTouches[0].clientY : e.clientY) - rect.top  - size / 2;
 
     const ripple = document.createElement('span');
+    ripple.setAttribute('data-ripple','');
     Object.assign(ripple.style, {
       position: 'absolute',
       width: size + 'px', height: size + 'px',
@@ -2309,7 +2384,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
     el.style.position = 'relative';
     el.style.overflow = 'hidden';
     el.appendChild(ripple);
-    ripple.addEventListener('animationend', () => ripple.remove());
+    ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
   }
 
   // Inject ripple keyframe once
@@ -2520,7 +2595,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
       showOverlay();
       /* Duración proporcional a la distancia — max 600ms, min 320ms */
       var rect = el.getBoundingClientRect();
-      var dist = Math.abs(rect.top + window.pageYOffset - window.pageYOffset - getTopOffset());
+      var dist = Math.abs(rect.top - getTopOffset());
       var dur  = Math.min(600, Math.max(320, dist * 0.6));
       smoothTo(el, dur);
       if (history.replaceState) {
@@ -2717,6 +2792,7 @@ if ('serviceWorker' in navigator) {
   var killTimer  = null;       // safety timer to force-reset
   var finalTarget = null;      // { x, y, w, h }
   var pendingLoad = null;      // img onload handler reference
+  var savedScrollY = 0;        // posición guardada antes de lbx-locked
 
   /* Curvas de ease profesionales */
   var EASE_OUT   = 'cubic-bezier(.22,1,.36,1)';     // apertura: easeOutExpo-soft
@@ -2742,9 +2818,14 @@ if ('serviceWorker' in navigator) {
     badgeEl     = root.querySelector('.lbx-badge');
     captionText = root.querySelector('.lbx-caption-text');
     closeBtn    = root.querySelector('.lbx-close');
+    var lastCloseTs = 0;
     root.addEventListener('click', function(ev){
       var t = ev.target;
-      if (t && t.hasAttribute && t.hasAttribute('data-lbx-close')) close();
+      if (!t || !t.hasAttribute || !t.hasAttribute('data-lbx-close')) return;
+      var now = Date.now();
+      if (now - lastCloseTs < 300) return;
+      lastCloseTs = now;
+      close();
     });
     return root;
   }
@@ -2788,11 +2869,15 @@ if ('serviceWorker' in navigator) {
       root.setAttribute('aria-hidden','true');
     }
     if (stage){
-      stage.style.cssText = '';
+      stage.classList.remove('lbx-loaded','lbx-animating');
+      stage.style.transform = 'translate3d(-9999px,-9999px,0)';
+      stage.style.willChange = '';
     }
     if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
     document.body.classList.remove('lbx-locked');
-    if (img) img.src = '';
+    document.body.style.top = '';
+    window.scrollTo(0, savedScrollY);
+    /* No vaciar img.src — preservar bitmap en GPU para evitar re-fetch */
     if (pendingLoad && img){ img.removeEventListener('load', pendingLoad); pendingLoad = null; }
     currentSrcEl = null;
     finalTarget  = null;
@@ -2800,9 +2885,9 @@ if ('serviceWorker' in navigator) {
   function armKillTimer(){
     if (killTimer) clearTimeout(killTimer);
     killTimer = setTimeout(function(){
-      /* Si tras 900ms la animación no terminó, reset duro */
+      /* Si tras 1200ms la animación no terminó (throttled CPU), reset duro */
       killSwitch();
-    }, 900);
+    }, 1200);
   }
   function disarmKillTimer(){
     if (killTimer){ clearTimeout(killTimer); killTimer = null; }
@@ -2821,19 +2906,37 @@ if ('serviceWorker' in navigator) {
     var rect = srcEl.getBoundingClientRect();
     var src  = srcEl.currentSrc || srcEl.src;
 
-    /* Ocultar source INMEDIATAMENTE tras capturar el rect (antes del repaint)
-       → elimina el parpadeo del thumbnail que quedaba visible 1 frame */
-    srcEl.classList.add('lbx-src-hidden');
+    /* Limpiar clases de animación anterior */
+    stage.classList.remove('lbx-loaded','lbx-animating');
 
-    img.src = src;
     img.alt = srcEl.alt || '';
     if (area){ badgeEl.textContent = area; badgeEl.style.display = 'inline-block'; }
     else     { badgeEl.style.display = 'none'; }
     captionText.textContent = cap || srcEl.alt || '';
 
+    /* Asignar src — si es la misma imagen que antes, el bitmap ya está en GPU (sin re-fetch) */
+    img.src = src;
+
+    /* Pre-posicionar el stage sobre el thumbnail antes de hacerlo visible.
+       stage.style.cssText sobreescribe cualquier transform residual de -9999px. */
+    stage.style.cssText = [
+      'width:'            + rect.width  + 'px',
+      'height:'           + rect.height + 'px',
+      'transform:translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(1,1)',
+      'transform-origin:0 0'
+    ].join(';');
+
+    /* Reflow sincrónico — fija el layout del stage antes de que el root se haga visible */
+    void stage.offsetWidth;
+
+    savedScrollY = window.pageYOffset || 0;
+    document.body.style.top = '-' + savedScrollY + 'px';
     document.body.classList.add('lbx-locked');
     root.classList.add('lbx-open');
     root.setAttribute('aria-hidden','false');
+
+    /* Thumbnail oculto después de que el root+stage ya es visible encima de él */
+    srcEl.classList.add('lbx-src-hidden');
 
     var run = function(){
       var natW = img.naturalWidth  || rect.width  || 800;
@@ -2841,72 +2944,65 @@ if ('serviceWorker' in navigator) {
       var target = computeTargetRect(natW, natH);
       finalTarget = target;
 
-      /* Stage final size — fijado UNA vez, no se toca durante la animación */
       stage.style.width  = target.w + 'px';
       stage.style.height = target.h + 'px';
       stage.style.transformOrigin = '0 0';
-
-      /* Close button pegado a la esquina superior-derecha de la foto */
       positionCloseBtn(target);
 
       var sx0 = rect.width  / target.w;
       var sy0 = rect.height / target.h;
-
-      /* FLIP: estado inicial en el rect del thumbnail */
       var fromTransform = 'translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(' + sx0 + ',' + sy0 + ')';
       var toTransform   = 'translate3d(' + target.x + 'px,' + target.y + 'px,0) scale(1,1)';
 
-      /* Aplicar estado inicial ANTES de animar para evitar flash */
       stage.style.transform = fromTransform;
-      void stage.offsetWidth; // force reflow (solo aquí, antes de animar)
+      void stage.offsetWidth;
+      stage.classList.add('lbx-animating');
 
-      /* WAAPI — el browser corre la animación en GPU composite thread */
       armKillTimer();
+      /* Solo transform — opacity del stage se mantiene en 1 durante apertura.
+         Una sola propiedad animada = compositor thread puro, cero paint en móvil. */
       activeAnim = stage.animate(
-        [
-          { transform: fromTransform, opacity: 1 },
-          { transform: toTransform,   opacity: 1 }
-        ],
-        {
-          duration: 520,
-          easing: EASE_SPRING,
-          fill: 'forwards'
-        }
+        [{ transform: fromTransform }, { transform: toTransform }],
+        { duration: 460, easing: 'cubic-bezier(.22,1.15,.36,1)', fill: 'forwards' }
       );
 
       activeAnim.onfinish = function(){
-        /* Commitamos el estado final como style inline, luego cancelamos
-           la animación (libera el lock WAAPI sobre el elemento) */
-        stage.style.transform = toTransform;
-        try { activeAnim.cancel(); } catch(_) {}
+        /* commitStyles escribe el estado final en .style y libera el fill:forwards
+           de memoria — crítico para GC en uso prolongado en móviles */
+        try { activeAnim.commitStyles(); } catch(_){}
+        try { activeAnim.cancel(); } catch(_){}
         activeAnim = null;
+        stage.classList.remove('lbx-animating');
         disarmKillTimer();
         state = 'open';
+        stage.classList.add('lbx-loaded');
         if (closeBtn) closeBtn.focus({ preventScroll: true });
       };
       activeAnim.oncancel = function(){
         activeAnim = null;
+        stage.classList.remove('lbx-animating');
         disarmKillTimer();
       };
     };
 
-    /* Si la imagen no está cargada, esperamos load → pero con timeout */
+    /* Doble rAF: 1.er frame pinta root+stage en posición thumbnail,
+       2.º frame lanza WAAPI — el compositor nunca ve un estado intermedio */
+    function scheduleRun(){
+      requestAnimationFrame(function(){ requestAnimationFrame(run); });
+    }
+
     if (img.complete && img.naturalWidth){
-      requestAnimationFrame(run);
+      scheduleRun();
     } else {
-      pendingLoad = function(){
-        pendingLoad = null;
-        requestAnimationFrame(run);
-      };
+      pendingLoad = function(){ pendingLoad = null; scheduleRun(); };
       img.addEventListener('load', pendingLoad, { once: true });
-      /* Fallback: si tarda > 600ms, lanzamos con las dimensiones del rect */
       setTimeout(function(){
         if (state === 'opening' && pendingLoad){
           img.removeEventListener('load', pendingLoad);
           pendingLoad = null;
-          requestAnimationFrame(run);
+          scheduleRun();
         }
-      }, 600);
+      }, 800);
     }
   }
 
@@ -2950,42 +3046,69 @@ if ('serviceWorker' in navigator) {
       ('translate3d(' + finalTarget.x + 'px,' + finalTarget.y + 'px,0) scale(1,1)');
     var toTransform   = 'translate3d(' + toX + 'px,' + toY + 'px,0) scale(' + toSX + ',' + toSY + ')';
 
-    root.classList.remove('lbx-open');
-    root.setAttribute('aria-hidden','true');
+    /* El thumbnail se hace visible ANTES de que empiece la animación:
+       nunca hay un frame sin imagen debajo del stage */
+    if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
+
+    stage.classList.add('lbx-animating');
+    stage.classList.remove('lbx-loaded');
 
     armKillTimer();
+    /* Animar transform + opacity juntos en WAAPI.
+       El root permanece visible (lbx-open activo) durante toda la animación
+       para que el backdrop oscuro tape el body blanco hasta el último frame.
+       Solo en done() quitamos lbx-open — la CSS transition de 280ms del backdrop
+       ya no es visible porque el stage ya está en opacidad 0. */
     activeAnim = stage.animate(
       [
         { transform: fromTransform, opacity: 1 },
-        { transform: toTransform,   opacity: 0.85 }
+        { transform: toTransform,   opacity: 0 }
       ],
-      {
-        duration: 380,
-        easing: EASE_IN,
-        fill: 'forwards'
-      }
+      { duration: 340, easing: 'cubic-bezier(.4,0,.8,.6)', fill: 'forwards' }
     );
 
     var done = function(){
-      try { if (activeAnim) activeAnim.cancel(); } catch(_) {}
+      try { if (activeAnim) activeAnim.commitStyles(); } catch(_){}
+      try { if (activeAnim) activeAnim.cancel(); } catch(_){}
       activeAnim = null;
       disarmKillTimer();
-      if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
+      /* Quitar lbx-open DESPUÉS de que el stage ya es opacidad 0 —
+         la CSS transition del backdrop arranca desde un overlay ya invisible */
+      root.classList.remove('lbx-open');
+      root.setAttribute('aria-hidden','true');
       document.body.classList.remove('lbx-locked');
-      if (img) img.src = '';
-      if (stage) stage.style.cssText = '';
+      document.body.style.top = '';
+      window.scrollTo(0, savedScrollY);
+      if (stage){
+        stage.style.opacity  = '';
+        stage.style.transform = 'translate3d(-9999px,-9999px,0)';
+        stage.style.willChange = '';
+        stage.classList.remove('lbx-animating');
+      }
       currentSrcEl = null;
       finalTarget  = null;
       state = 'idle';
       if (lastFocus && lastFocus.focus){
-        try { lastFocus.focus({ preventScroll: true }); } catch(_) { lastFocus.focus(); }
+        try { lastFocus.focus({ preventScroll: true }); } catch(_){ lastFocus.focus(); }
       }
     };
     activeAnim.onfinish = done;
     activeAnim.oncancel = done;
   }
 
+  /* ── Image preload cache — evita shimmer en imágenes no cacheadas ── */
+  var preloadCache = {};
+  function preloadSrc(src, cb){
+    if (!src) { cb(); return; }
+    if (preloadCache[src]) { cb(); return; }
+    var p = new Image();
+    p.onload  = function(){ preloadCache[src] = true; cb(); };
+    p.onerror = function(){ cb(); }; // falla silenciosa → open igual
+    p.src = src;
+  }
+
   /* ── Event delegation ─────────────────────────────────────────── */
+  var lastOpenTs = 0; // throttle anti-spam: ignora clics < 350ms tras el último open
   function isEligible(el){
     if (!el || el.tagName !== 'IMG') return false;
     if (el.hasAttribute('data-lightbox')) return true;
@@ -2995,10 +3118,16 @@ if ('serviceWorker' in navigator) {
     var t = ev.target;
     if (!isEligible(t)) return;
     ev.preventDefault();
+    /* Throttle: si la animación anterior no terminó (< 350ms), ignorar */
+    var now = Date.now();
+    if (now - lastOpenTs < 350) return;
+    lastOpenTs = now;
     var parent = t.closest('[data-lightbox]') || t.closest('.gallery-item,.gal22-item,.gallery-card,.act-card,.teatro-item,.inst-gal');
     var cap  = t.getAttribute('data-caption') || (parent && parent.getAttribute('data-caption')) || t.alt || '';
     var area = (parent && parent.getAttribute('data-area')) || '';
-    open(t, cap, area);
+    var src  = t.currentSrc || t.src || '';
+    /* Precargar en memoria antes de abrir — si ya está cacheada es instantáneo */
+    preloadSrc(src, function(){ open(t, cap, area); });
   }, true);
 
   document.addEventListener('keydown', function(ev){
@@ -3029,6 +3158,19 @@ if ('serviceWorker' in navigator) {
     }
   });
 })();
+
+/* ── Fallback global para imágenes rotas ──────────────────────────
+   Nunca muestra el icono nativo de error del navegador.
+   Aplica fondo gris neutro + oculta el broken-image icon vía color transparent. */
+document.addEventListener('error', function(ev){
+  var el = ev.target;
+  if (!el || el.tagName !== 'IMG') return;
+  /* No tocar la imagen del lightbox — tiene su propio shimmer */
+  if (el.classList.contains('lbx-img')) return;
+  el.style.opacity = '0';
+  el.style.background = '#e2e8f0';
+  el.style.minHeight = el.style.minHeight || '40px';
+}, true);
 </script>
 </body>
 </html>
