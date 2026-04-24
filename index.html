@@ -3098,17 +3098,31 @@ if ('serviceWorker' in navigator) {
 
   /* ── Image preload cache — evita shimmer en imágenes no cacheadas ── */
   var preloadCache = {};
+  var pendingPreload = null; // solo un preload activo a la vez
   function preloadSrc(src, cb){
+    /* Cancelar cualquier preload anterior en vuelo */
+    if (pendingPreload){
+      pendingPreload.onload = pendingPreload.onerror = null;
+      pendingPreload = null;
+    }
     if (!src) { cb(); return; }
     if (preloadCache[src]) { cb(); return; }
     var p = new Image();
-    p.onload  = function(){ preloadCache[src] = true; cb(); };
-    p.onerror = function(){ cb(); }; // falla silenciosa → open igual
+    pendingPreload = p;
+    p.onload  = function(){
+      pendingPreload = null;
+      preloadCache[src] = true;
+      cb();
+    };
+    p.onerror = function(){
+      pendingPreload = null;
+      cb();
+    };
     p.src = src;
   }
 
   /* ── Event delegation ─────────────────────────────────────────── */
-  var lastOpenTs = 0; // throttle anti-spam: ignora clics < 350ms tras el último open
+  var lastOpenTs = 0;
   function isEligible(el){
     if (!el || el.tagName !== 'IMG') return false;
     if (el.hasAttribute('data-lightbox')) return true;
@@ -3118,16 +3132,24 @@ if ('serviceWorker' in navigator) {
     var t = ev.target;
     if (!isEligible(t)) return;
     ev.preventDefault();
-    /* Throttle: si la animación anterior no terminó (< 350ms), ignorar */
     var now = Date.now();
     if (now - lastOpenTs < 350) return;
     lastOpenTs = now;
+    /* Limpiar lbx-src-hidden huérfano antes de abrir — evita thumbnails invisibles */
+    document.querySelectorAll('.lbx-src-hidden').forEach(function(el){
+      if (el !== t) el.classList.remove('lbx-src-hidden');
+    });
     var parent = t.closest('[data-lightbox]') || t.closest('.gallery-item,.gal22-item,.gallery-card,.act-card,.teatro-item,.inst-gal');
     var cap  = t.getAttribute('data-caption') || (parent && parent.getAttribute('data-caption')) || t.alt || '';
     var area = (parent && parent.getAttribute('data-area')) || '';
     var src  = t.currentSrc || t.src || '';
-    /* Precargar en memoria antes de abrir — si ya está cacheada es instantáneo */
-    preloadSrc(src, function(){ open(t, cap, area); });
+    /* Capturar referencia al target en el momento del clic.
+       El callback verifica que sigue siendo el clic más reciente antes de abrir. */
+    var clickTs = lastOpenTs;
+    preloadSrc(src, function(){
+      if (clickTs !== lastOpenTs) return; // clic más nuevo llegó antes — descartar
+      open(t, cap, area);
+    });
   }, true);
 
   document.addEventListener('keydown', function(ev){
