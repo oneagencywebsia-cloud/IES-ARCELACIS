@@ -2515,7 +2515,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
 
     function getTopOffset(){
       var topNav = document.getElementById('topNav');
-      return (topNav ? topNav.offsetHeight : 56) + 12;
+      return (topNav ? topNav.getBoundingClientRect().height : 56) + 16;
     }
 
     /* scroll rAF custom:
@@ -2595,10 +2595,11 @@ a.oferta-tag,a.plan-item,a.select-tag{
       try { el = document.querySelector(href); } catch(_) { return; }
       if (!el) return;
       showOverlay();
-      /* Duración proporcional a la distancia — max 600ms, min 320ms */
+      /* Distancia real de scroll (no rect.top que es relativo al viewport actual) */
       var rect = el.getBoundingClientRect();
-      var dist = Math.abs(rect.top - getTopOffset());
-      var dur  = Math.min(600, Math.max(320, dist * 0.6));
+      var destY = rect.top + window.pageYOffset - getTopOffset();
+      var dist = Math.abs(destY - window.pageYOffset);
+      var dur  = Math.min(600, Math.max(320, dist * 0.5));
       smoothTo(el, dur);
       if (history.replaceState) {
         try { history.replaceState(null, '', href); } catch(_) {}
@@ -2789,12 +2790,12 @@ if ('serviceWorker' in navigator) {
 (function(){
   var root, stage, img, badgeEl, captionText, closeBtn;
   var currentSrcEl = null, lastFocus = null;
-  var state = 'idle';          // 'idle' | 'opening' | 'open' | 'closing'
-  var activeAnim = null;       // current WAAPI Animation
-  var killTimer  = null;       // safety timer to force-reset
-  var finalTarget = null;      // { x, y, w, h }
-  var pendingLoad = null;      // img onload handler reference
-  var savedScrollY = 0;        // posición guardada antes de lbx-locked
+  var state = 'idle';    // 'idle' | 'opening' | 'open' | 'closing'
+  var activeAnim = null;
+  var killTimer  = null;
+  var finalTarget = null;
+  var pendingLoad = null;
+  var openId = 0;        // incrementa en cada open() — detecta aperturas solapadas
 
   /* Curvas de ease profesionales */
   var EASE_OUT   = 'cubic-bezier(.22,1,.36,1)';     // apertura: easeOutExpo-soft
@@ -2860,130 +2861,103 @@ if ('serviceWorker' in navigator) {
     closeBtn.style.top  = y + 'px';
   }
 
-  /* ── Kill switch — reset total si algo sale mal ────────────── */
-  function killSwitch(){
-    try { if (activeAnim) activeAnim.cancel(); } catch(_) {}
-    activeAnim = null;
+  /* ── Reset total — estado garantizado limpio ────────────────── */
+  function reset(){
     if (killTimer){ clearTimeout(killTimer); killTimer = null; }
-    state = 'idle';
-    if (root){
-      root.classList.remove('lbx-open');
-      root.setAttribute('aria-hidden','true');
-    }
+    try { if (activeAnim) activeAnim.cancel(); } catch(_){}
+    activeAnim = null;
+    if (pendingLoad && img){ img.removeEventListener('load', pendingLoad); pendingLoad = null; }
+    if (currentSrcEl){ currentSrcEl.classList.remove('lbx-src-hidden'); currentSrcEl = null; }
     if (stage){
       stage.style.cssText = 'transform:translate3d(-9999px,-9999px,0);opacity:1;width:0;height:0';
       stage.classList.remove('lbx-loaded','lbx-animating');
     }
-    if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
+    if (root){ root.classList.remove('lbx-open'); root.setAttribute('aria-hidden','true'); }
     document.body.classList.remove('lbx-locked');
-    /* No vaciar img.src — preservar bitmap en GPU para evitar re-fetch */
-    if (pendingLoad && img){ img.removeEventListener('load', pendingLoad); pendingLoad = null; }
-    currentSrcEl = null;
-    finalTarget  = null;
-  }
-  function armKillTimer(){
-    if (killTimer) clearTimeout(killTimer);
-    killTimer = setTimeout(function(){
-      /* Si tras 1200ms la animación no terminó (throttled CPU), reset duro */
-      killSwitch();
-    }, 1200);
-  }
-  function disarmKillTimer(){
-    if (killTimer){ clearTimeout(killTimer); killTimer = null; }
+    finalTarget = null;
+    state = 'idle';
   }
 
   /* ── OPEN ─────────────────────────────────────────────────────── */
   function open(srcEl, cap, area){
-    if (state !== 'idle'){ killSwitch(); }
+    reset();
+    openId++;
+    var myId = openId;
 
     ensureRoot();
-    state = 'opening';
-    currentSrcEl = srcEl;
     lastFocus = document.activeElement;
+    currentSrcEl = srcEl;
+    state = 'opening';
 
-    var rect = srcEl.getBoundingClientRect();
-    var src  = srcEl.currentSrc || srcEl.src;
-
-    stage.classList.remove('lbx-loaded','lbx-animating');
-
+    var src = srcEl.currentSrc || srcEl.src;
+    img.src = src;
     img.alt = srcEl.alt || '';
     if (area){ badgeEl.textContent = area; badgeEl.style.display = 'inline-block'; }
-    else     { badgeEl.style.display = 'none'; }
+    else      { badgeEl.style.display = 'none'; }
     captionText.textContent = cap || srcEl.alt || '';
+    stage.classList.remove('lbx-loaded','lbx-animating');
 
-    img.src = src;
+    var rect = srcEl.getBoundingClientRect();
 
-    /* Resetear opacity explícitamente — commitStyles() del cierre anterior
-       puede haber dejado opacity:0 en el style inline del stage */
+    /* Posicionar stage sobre thumbnail con opacity:1 garantizado */
     stage.style.cssText = [
-      'width:'     + rect.width  + 'px',
-      'height:'    + rect.height + 'px',
+      'width:'          + rect.width  + 'px',
+      'height:'         + rect.height + 'px',
       'opacity:1',
-      'transform:translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(1,1)',
-      'transform-origin:0 0'
+      'transform-origin:0 0',
+      'transform:translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(1,1)'
     ].join(';');
-
-    /* Reflow sincrónico — fija el layout del stage antes de que el root se haga visible */
     void stage.offsetWidth;
 
     document.body.classList.add('lbx-locked');
     root.classList.add('lbx-open');
     root.setAttribute('aria-hidden','false');
-
-    /* Thumbnail oculto después de que el root+stage ya es visible encima de él */
     srcEl.classList.add('lbx-src-hidden');
 
-    var run = function(){
+    function run(){
+      if (myId !== openId) return; // apertura más nueva llegó — abortar
       var natW = img.naturalWidth  || rect.width  || 800;
       var natH = img.naturalHeight || rect.height || 600;
       var target = computeTargetRect(natW, natH);
       finalTarget = target;
 
-      stage.style.width  = target.w + 'px';
-      stage.style.height = target.h + 'px';
-      stage.style.transformOrigin = '0 0';
-      positionCloseBtn(target);
-
       var sx0 = rect.width  / target.w;
       var sy0 = rect.height / target.h;
-      var fromTransform = 'translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(' + sx0 + ',' + sy0 + ')';
-      var toTransform   = 'translate3d(' + target.x + 'px,' + target.y + 'px,0) scale(1,1)';
+      var fromT = 'translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(' + sx0 + ',' + sy0 + ')';
+      var toT   = 'translate3d(' + target.x  + 'px,' + target.y + 'px,0) scale(1,1)';
 
-      stage.style.transform = fromTransform;
+      stage.style.width  = target.w + 'px';
+      stage.style.height = target.h + 'px';
+      stage.style.transform = fromT;
       void stage.offsetWidth;
       stage.classList.add('lbx-animating');
+      positionCloseBtn(target);
 
-      armKillTimer();
+      killTimer = setTimeout(function(){ if (state !== 'idle') reset(); }, 1200);
+
       activeAnim = stage.animate(
-        [{ transform: fromTransform }, { transform: toTransform }],
-        { duration: 460, easing: 'cubic-bezier(.22,1.15,.36,1)', fill: 'none' }
+        [{ transform: fromT }, { transform: toT }],
+        { duration: 460, easing: 'cubic-bezier(.22,1.15,.36,1)', fill: 'forwards' }
       );
-
       activeAnim.onfinish = function(){
-        /* Fijar transform final en inline style manualmente — sin commitStyles()
-           que puede dejar estado residual si la animación se interrumpe */
-        stage.style.transform = toTransform;
+        if (myId !== openId) return;
+        stage.style.transform = toT;
         stage.style.opacity   = '1';
         try { activeAnim.cancel(); } catch(_){}
         activeAnim = null;
+        if (killTimer){ clearTimeout(killTimer); killTimer = null; }
         stage.classList.remove('lbx-animating');
-        disarmKillTimer();
-        state = 'open';
         stage.classList.add('lbx-loaded');
+        state = 'open';
         if (closeBtn) closeBtn.focus({ preventScroll: true });
       };
       activeAnim.oncancel = function(){
-        /* Al cancelar, fijar también el estado actual para no dejar fill residual */
-        stage.style.transform = toTransform;
-        stage.style.opacity   = '1';
         activeAnim = null;
+        if (killTimer){ clearTimeout(killTimer); killTimer = null; }
         stage.classList.remove('lbx-animating');
-        disarmKillTimer();
       };
-    };
+    }
 
-    /* Doble rAF: 1.er frame pinta root+stage en posición thumbnail,
-       2.º frame lanza WAAPI — el compositor nunca ve un estado intermedio */
     function scheduleRun(){
       requestAnimationFrame(function(){ requestAnimationFrame(run); });
     }
@@ -2994,7 +2968,7 @@ if ('serviceWorker' in navigator) {
       pendingLoad = function(){ pendingLoad = null; scheduleRun(); };
       img.addEventListener('load', pendingLoad, { once: true });
       setTimeout(function(){
-        if (state === 'opening' && pendingLoad){
+        if (state === 'opening' && pendingLoad && myId === openId){
           img.removeEventListener('load', pendingLoad);
           pendingLoad = null;
           scheduleRun();
@@ -3006,89 +2980,50 @@ if ('serviceWorker' in navigator) {
   /* ── CLOSE ────────────────────────────────────────────────────── */
   function close(){
     if (state === 'idle' || state === 'closing') return;
-    /* Si estamos abriendo y run() aún no ejecutó, finalTarget es null —
-       no hay nada que animar, reset limpio directo */
-    if (state === 'opening'){
-      killSwitch();
-      return;
-    }
-    if (!finalTarget){ killSwitch(); return; }
+    if (state === 'opening' || !finalTarget){ reset(); return; }
 
     state = 'closing';
+    if (killTimer){ clearTimeout(killTimer); killTimer = null; }
+    try { if (activeAnim) activeAnim.cancel(); } catch(_){}
+    activeAnim = null;
 
-    /* Calcular target del cierre */
     var toX, toY, toSX, toSY;
     if (currentSrcEl && document.contains(currentSrcEl)){
       var r = currentSrcEl.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0){
-        /* Source oculto (p.ej. <details> cerrado) → colapso al centro */
-        toX = window.innerWidth/2  - finalTarget.w * 0.05;
-        toY = window.innerHeight/2 - finalTarget.h * 0.05;
-        toSX = toSY = 0.1;
+      if (r.width > 0 && r.height > 0){
+        toX = r.left; toY = r.top;
+        toSX = r.width / finalTarget.w; toSY = r.height / finalTarget.h;
       } else {
-        toX  = r.left;
-        toY  = r.top;
-        toSX = r.width  / finalTarget.w;
-        toSY = r.height / finalTarget.h;
+        toX = window.innerWidth/2; toY = window.innerHeight/2; toSX = toSY = 0.1;
       }
     } else {
-      toX = window.innerWidth/2;
-      toY = window.innerHeight/2;
-      toSX = toSY = 0;
+      toX = window.innerWidth/2; toY = window.innerHeight/2; toSX = toSY = 0;
     }
 
-    /* Leer transform actual — si venimos del estado idle post-open,
-       está en el style inline (fijado por onfinish) */
-    var fromTransform = stage.style.transform ||
-      ('translate3d(' + finalTarget.x + 'px,' + finalTarget.y + 'px,0) scale(1,1)');
-    var toTransform   = 'translate3d(' + toX + 'px,' + toY + 'px,0) scale(' + toSX + ',' + toSY + ')';
+    var fromT = 'translate3d(' + finalTarget.x + 'px,' + finalTarget.y + 'px,0) scale(1,1)';
+    var toT   = 'translate3d(' + toX + 'px,' + toY + 'px,0) scale(' + toSX + ',' + toSY + ')';
 
-    /* El thumbnail se hace visible ANTES de que empiece la animación:
-       nunca hay un frame sin imagen debajo del stage */
     if (currentSrcEl) currentSrcEl.classList.remove('lbx-src-hidden');
-
     stage.classList.add('lbx-animating');
     stage.classList.remove('lbx-loaded');
+    /* Garantizar opacity:1 al inicio del cierre — podría haber quedado
+       en cualquier valor si se interrumpió una apertura previa */
+    stage.style.opacity = '1';
 
-    armKillTimer();
-    /* Animar transform + opacity juntos en WAAPI.
-       El root permanece visible (lbx-open activo) durante toda la animación
-       para que el backdrop oscuro tape el body blanco hasta el último frame.
-       Solo en done() quitamos lbx-open — la CSS transition de 280ms del backdrop
-       ya no es visible porque el stage ya está en opacidad 0. */
+    killTimer = setTimeout(function(){ reset(); }, 800);
+
     activeAnim = stage.animate(
-      [
-        { transform: fromTransform, opacity: 1 },
-        { transform: toTransform,   opacity: 0 }
-      ],
-      { duration: 340, easing: 'cubic-bezier(.4,0,.8,.6)', fill: 'forwards' }
+      [{ transform: fromT, opacity: 1 }, { transform: toT, opacity: 0 }],
+      { duration: 300, easing: 'cubic-bezier(.4,0,.8,.6)', fill: 'forwards' }
     );
 
-    var done = function(){
-      /* NO commitStyles() aquí — escribiría opacity:0 en inline style
-         y un repaint entre opacity:0 y el park a -9999px causaría el flash.
-         Cancelamos sin fijar estilos, luego hacemos todo en un solo batch. */
-      try { if (activeAnim) activeAnim.cancel(); } catch(_){}
-      activeAnim = null;
-      disarmKillTimer();
-      /* Un único batch de escrituras DOM: park + quitar lbx-open + unlock body.
-         El browser ve todo en el mismo frame — cero repaint intermedio. */
-      if (stage){
-        stage.style.cssText = 'transform:translate3d(-9999px,-9999px,0);opacity:1;width:0;height:0';
-        stage.classList.remove('lbx-animating','lbx-loaded');
-      }
-      root.classList.remove('lbx-open');
-      root.setAttribute('aria-hidden','true');
-      document.body.classList.remove('lbx-locked');
-      currentSrcEl = null;
-      finalTarget  = null;
-      state = 'idle';
-      if (lastFocus && lastFocus.focus){
-        try { lastFocus.focus({ preventScroll: true }); } catch(_){ lastFocus.focus(); }
+    var savedFocus = lastFocus;
+    activeAnim.onfinish = activeAnim.oncancel = function(){
+      reset();
+      if (savedFocus && savedFocus.focus){
+        try { savedFocus.focus({ preventScroll: true }); } catch(_){}
       }
     };
-    activeAnim.onfinish = done;
-    activeAnim.oncancel = done;
   }
 
   /* ── Image preload cache — evita shimmer en imágenes no cacheadas ── */
@@ -3171,7 +3106,7 @@ if ('serviceWorker' in navigator) {
      de la pestaña durante una animación, reset limpio */
   document.addEventListener('visibilitychange', function(){
     if (document.hidden && (state === 'opening' || state === 'closing')){
-      killSwitch();
+      reset();
     }
   });
 })();
