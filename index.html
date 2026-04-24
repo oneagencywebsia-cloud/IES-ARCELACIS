@@ -102,9 +102,12 @@
 
 html{
   scroll-behavior:smooth;
+  scroll-padding-top:calc(var(--nav-h) + 12px); /* anclajes no se ocultan tras el topnav fijo */
   -webkit-tap-highlight-color:transparent;
   text-size-adjust:100%;-webkit-text-size-adjust:100%;
 }
+/* Fallback universal para navegadores que ignoren scroll-padding en <html> */
+section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
 
 body{
   font-family:'Inter',system-ui,-apple-system,sans-serif;
@@ -428,15 +431,17 @@ ul,ol{list-style:none}
 .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .gallery-item{
   border-radius:var(--r);overflow:hidden;position:relative;aspect-ratio:4/3;
-  box-shadow:var(--sh-sm);
+  box-shadow:var(--sh-sm);cursor:zoom-in;
+  transform:translateZ(0);backface-visibility:hidden;
   transition:transform var(--dur-mid) var(--ease-spring),
              box-shadow var(--dur-mid) var(--ease-smooth);
 }
-.gallery-item:hover{transform:scale(1.02);box-shadow:var(--sh-lg)}
+.gallery-item:hover{transform:translateZ(0) scale(1.02);box-shadow:var(--sh-lg)}
 .gallery-item.wide{grid-column:1/-1;aspect-ratio:16/9}
 .gallery-item img{
   width:100%;height:100%;object-fit:cover;
   transition:transform .5s var(--ease-smooth);
+  pointer-events:auto; /* explícito: la img es el target del click handler */
 }
 .gallery-item:hover img{transform:scale(1.05)}
 .gallery-item-label{
@@ -444,6 +449,7 @@ ul,ol{list-style:none}
   background:linear-gradient(transparent 40%,rgba(15,23,42,.7));
   display:flex;flex-direction:column;justify-content:flex-end;padding:12px;
   opacity:0;transition:opacity var(--dur-mid) var(--ease-smooth);
+  pointer-events:none; /* FIX: no debe interceptar clicks hacia la img */
 }
 .gallery-item:hover .gallery-item-label{opacity:1}
 .gallery-item-label span{color:white;font-size:.78rem;font-weight:700}
@@ -661,11 +667,15 @@ a.oferta-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 }
 .inst-item[open] .inst-chev{transform:rotate(180deg)}
 
-/* Galería in-place — miniaturas clicables, GPU promoted */
+/* Galería in-place — miniaturas clicables, GPU promoted, skeleton shimmer */
 .inst-gal{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
   gap:8px;margin-top:14px;
+}
+@keyframes lbxShimmer{
+  0%  {background-position:-200% 0}
+  100%{background-position: 200% 0}
 }
 .inst-gal img{
   width:100%;aspect-ratio:4/3;object-fit:cover;
@@ -673,14 +683,34 @@ a.oferta-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
   transform:translateZ(0);
   backface-visibility:hidden;-webkit-backface-visibility:hidden;
   transition:transform 280ms cubic-bezier(.34,1.44,.64,1),
-             box-shadow 280ms ease;
+             box-shadow 280ms ease,
+             opacity 260ms ease;
   box-shadow:0 1px 3px rgba(0,0,0,.08);
+  /* Skeleton shimmer mientras loading (se oculta al completarse la carga) */
+  background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 37%,#e2e8f0 63%);
+  background-size:200% 100%;
+  animation:lbxShimmer 1.4s ease-in-out infinite;
 }
+.inst-gal img[data-loaded="1"]{animation:none;background:none}
 .inst-gal img:hover{
   transform:translate3d(0,-2px,0) scale(1.02);
   box-shadow:0 8px 24px rgba(0,0,0,.18);
 }
 .inst-gal img:active{transform:translateZ(0) scale(.98)}
+
+/* Animación nativa del <details> — expansión suave sin lag percibido */
+@supports (interpolate-size:allow-keywords){
+  .inst-item{interpolate-size:allow-keywords}
+  .inst-item::details-content{
+    height:0;opacity:0;overflow:hidden;
+    transition:height 320ms cubic-bezier(.34,1.44,.64,1),
+               opacity 220ms ease-out,
+               content-visibility 320ms allow-discrete;
+  }
+  .inst-item[open]::details-content{
+    height:auto;opacity:1;content-visibility:visible;
+  }
+}
 
 /* ============================================================
    PLANES
@@ -917,16 +947,15 @@ a.select-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
   box-shadow:0 48px 100px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.08);
   contain:layout paint style;
 }
-/* will-change activado solo mientras se anima (controlado por JS via .lbx-animating) */
-.lbx-stage.lbx-animating{will-change:transform,width,height}
+/* will-change activado solo mientras se anima. Sólo transform (ya no animamos width/height → zero reflow) */
+.lbx-stage.lbx-animating{will-change:transform}
 .lbx-img{
   width:100%;height:100%;
-  display:block;object-fit:cover;
+  display:block;object-fit:contain;background:#0f172a;
   transform:translate3d(0,0,0);
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
 }
-.lbx-root.lbx-open .lbx-img{object-fit:contain;background:#0f172a}
 
 /* Source hidden while animating (evita duplicación visual) */
 .lbx-src-hidden{visibility:hidden}
@@ -2462,6 +2491,82 @@ a.oferta-tag,a.plan-item,a.select-tag{
   document.addEventListener('pointermove', onMove,  { passive: true });
 })();
 
+/* ═══════════════════════════════════════════════════════════════════
+   INST-GAL PRELOADER — elimina el lag de 1-2s al abrir un <details>
+   ─────────────────────────────────────────────────────────────────
+   Estrategia en 3 capas:
+   1) IntersectionObserver → cuando el <details> entra en viewport
+      (aún cerrado), pre-cacheamos las imágenes internas via new Image().
+   2) Hover/focus/touchstart sobre <summary> → forzamos decode síncrono.
+   3) toggle listener → al abrir, si aún no cargó, mostramos placeholder
+      skeleton con shimmer (evita el "vacío" visual de 1-2s).
+*/
+(function(){
+  var gals = document.querySelectorAll('.inst-item .inst-gal');
+  if (!gals.length) return;
+
+  var preloaded = new WeakSet();
+  function markLoaded(img){ img.setAttribute('data-loaded','1'); }
+  function preloadGal(gal){
+    if (preloaded.has(gal)) return;
+    preloaded.add(gal);
+    gal.querySelectorAll('img').forEach(function(img){
+      var src = img.currentSrc || img.src;
+      if (!src) return;
+      /* Upgrade atributos para que al abrir el <details> se pinte instantáneo */
+      img.setAttribute('loading','eager');
+      img.setAttribute('fetchpriority','high');
+      if (img.complete && img.naturalWidth > 0) { markLoaded(img); return; }
+      img.addEventListener('load', function(){ markLoaded(img); }, { once: true });
+      img.addEventListener('error', function(){ markLoaded(img); }, { once: true });
+      /* Decode async para no bloquear el main thread */
+      var probe = new Image();
+      probe.decoding = 'async';
+      probe.src = src;
+      if (probe.decode) probe.decode().catch(function(){});
+    });
+  }
+  /* Marca imágenes que ya estén en cache al cargar la página */
+  document.querySelectorAll('.inst-gal img').forEach(function(img){
+    if (img.complete && img.naturalWidth > 0) markLoaded(img);
+    else img.addEventListener('load', function(){ markLoaded(img); }, { once: true });
+  });
+
+  /* 1) Observer lazy — pre-cachea cuando el details entra en viewport */
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (!e.isIntersecting) return;
+        var details = e.target;
+        var gal = details.querySelector('.inst-gal');
+        if (gal) preloadGal(gal);
+        io.unobserve(details);
+      });
+    }, { rootMargin: '200px 0px' });
+    document.querySelectorAll('.inst-item').forEach(function(d){ io.observe(d); });
+  }
+
+  /* 2) Hover/focus/touch sobre summary → decode inmediato (segunda capa) */
+  function triggerPreload(ev){
+    var summary = ev.target.closest && ev.target.closest('.inst-item>summary');
+    if (!summary) return;
+    var gal = summary.parentElement.querySelector('.inst-gal');
+    if (gal) preloadGal(gal);
+  }
+  ['pointerenter','focusin','touchstart'].forEach(function(ev){
+    document.addEventListener(ev, triggerPreload, { passive: true, capture: true });
+  });
+
+  /* 3) Skeleton shimmer mientras carga (solo si toggle sin cache) */
+  document.querySelectorAll('.inst-item').forEach(function(d){
+    d.addEventListener('toggle', function(){
+      if (!d.open) return;
+      var gal = d.querySelector('.inst-gal');
+      if (gal) preloadGal(gal);
+    });
+  });
+})();
+
 /* ============================================================
    SERVICE WORKER REGISTRATION — PWA offline + install
 ============================================================ */
@@ -2589,6 +2694,9 @@ if ('serviceWorker' in navigator) {
     };
   }
 
+  /* State para animación pure-transform (sin reflow por frame) */
+  var finalTarget = null;  // {x,y,w,h} del rect destino
+
   /* ── OPEN ─────────────────────────────────────────────────────── */
   function open(srcEl, cap, area){
     if (isOpen) return;
@@ -2600,42 +2708,59 @@ if ('serviceWorker' in navigator) {
     var rect = srcEl.getBoundingClientRect();
     var src  = srcEl.currentSrc || srcEl.src;
 
-    /* Prepare stage at source position (FIRST frame) */
+    /* Image source — si ya está en cache, se usa el mismo recurso */
     img.src = src;
     img.alt = srcEl.alt || '';
-    stage.style.width  = rect.width  + 'px';
-    stage.style.height = rect.height + 'px';
-    stage.style.transform = 'translate3d(' + rect.left + 'px,' + rect.top + 'px,0)';
+
     /* Caption + badge */
     if (area) { badgeEl.textContent = area; badgeEl.style.display = 'inline-block'; }
     else      { badgeEl.style.display = 'none'; }
     captionText.textContent = cap || srcEl.alt || '';
 
-    /* Hide source to avoid double-render */
+    /* Ocultar source para evitar doble render */
     srcEl.classList.add('lbx-src-hidden');
     document.body.classList.add('lbx-locked');
 
-    /* Show backdrop (CSS transition on opacity) */
+    /* Mostrar backdrop */
     root.classList.add('lbx-open');
     root.setAttribute('aria-hidden','false');
 
-    /* Wait 1 frame so image loads dims, then animate FIRST → LAST */
     var run = function(){
       var natW = img.naturalWidth  || rect.width;
       var natH = img.naturalHeight || rect.height;
       var target = computeTargetRect(natW, natH);
-      stage.classList.add('lbx-animating');     // will-change ON
+      finalTarget = target;
+
+      /* Fijamos el stage con el tamaño FINAL una sola vez.
+         Durante toda la animación sólo tocamos transform (scale + translate).
+         Esto = cero reflows. Promoción GPU permanente. */
+      stage.style.width  = target.w + 'px';
+      stage.style.height = target.h + 'px';
+
+      /* Estado inicial: posicionado y escalado al rect del thumbnail */
+      var sx0 = rect.width  / target.w;
+      var sy0 = rect.height / target.h;
+      /* Transform-origin top-left para que el scale mantenga la esquina fija */
+      stage.style.transformOrigin = '0 0';
+      stage.style.transform =
+        'translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(' + sx0 + ',' + sy0 + ')';
+
+      stage.classList.add('lbx-animating');
+
+      /* Force reflow para que el browser registre el estado inicial antes del rAF */
+      void stage.offsetWidth;
+
+      /* Animamos [x, y, scaleX, scaleY] — sólo transform, GPU */
       spring(
-        [rect.left, rect.top, rect.width, rect.height],
-        [target.x, target.y, target.w, target.h],
-        { stiffness: 280, damping: 20, mass: 0.8 },   // Framer premium: tension 280 / friction 20 / mass 0.8
+        [rect.left, rect.top, sx0, sy0],
+        [target.x, target.y, 1, 1],
+        { stiffness: 280, damping: 20, mass: 0.8 },
         function(v){
-          stage.style.width  = v[2] + 'px';
-          stage.style.height = v[3] + 'px';
-          stage.style.transform = 'translate3d(' + v[0] + 'px,' + v[1] + 'px,0)';
+          stage.style.transform =
+            'translate3d(' + v[0] + 'px,' + v[1] + 'px,0) scale(' + v[2] + ',' + v[3] + ')';
         },
         function(){
-          stage.classList.remove('lbx-animating');    // will-change OFF (libera GPU)
+          stage.classList.remove('lbx-animating');
           if (closeBtn) closeBtn.focus();
         }
       );
@@ -2646,38 +2771,37 @@ if ('serviceWorker' in navigator) {
 
   /* ── CLOSE ────────────────────────────────────────────────────── */
   function close(){
-    if (!isOpen || !root) return;
+    if (!isOpen || !root || !finalTarget) return;
     isOpen = false;
 
-    var stageRect = stage.getBoundingClientRect();
-    var target;
+    var target;  // [x, y, scaleX, scaleY]
     if (currentSrcEl && document.contains(currentSrcEl)) {
       var r = currentSrcEl.getBoundingClientRect();
-      /* Si el source está oculto (p.ej. <details> cerrado) → colapsa al centro */
       if (r.width === 0 || r.height === 0) {
+        /* Source oculto → colapsa al centro con scale 0.1 */
         var vw0 = window.innerWidth, vh0 = window.innerHeight;
-        target = [vw0/2 - stageRect.width*0.1, vh0/2 - stageRect.height*0.1, stageRect.width*0.2, stageRect.height*0.2];
+        target = [vw0/2 - finalTarget.w*0.05, vh0/2 - finalTarget.h*0.05, 0.1, 0.1];
       } else {
-        target = [r.left, r.top, r.width, r.height];
+        target = [r.left, r.top, r.width / finalTarget.w, r.height / finalTarget.h];
       }
     } else {
-      var vw = window.innerWidth, vh = window.innerHeight;
-      target = [vw/2, vh/2, 0, 0];
+      target = [window.innerWidth/2, window.innerHeight/2, 0, 0];
     }
 
-    /* Fade out backdrop + UI (CSS) al mismo tiempo que el FLIP inverso */
     root.classList.remove('lbx-open');
     root.setAttribute('aria-hidden','true');
     stage.classList.add('lbx-animating');
 
+    /* Leer posición actual desde transform style (no getBoundingClientRect — rápido) */
+    var cur = parseTransform(stage.style.transform);
+
     spring(
-      [stageRect.left, stageRect.top, stageRect.width, stageRect.height],
+      [cur.x, cur.y, cur.sx, cur.sy],
       target,
-      { stiffness: 360, damping: 28, mass: 0.65 },   // cierre snappy pero con damping coherente
+      { stiffness: 360, damping: 28, mass: 0.65 },
       function(v){
-        stage.style.width  = v[2] + 'px';
-        stage.style.height = v[3] + 'px';
-        stage.style.transform = 'translate3d(' + v[0] + 'px,' + v[1] + 'px,0)';
+        stage.style.transform =
+          'translate3d(' + v[0] + 'px,' + v[1] + 'px,0) scale(' + v[2] + ',' + v[3] + ')';
       },
       function(){
         stage.classList.remove('lbx-animating');
@@ -2686,9 +2810,16 @@ if ('serviceWorker' in navigator) {
         img.src = '';
         stage.style.cssText = '';
         currentSrcEl = null;
+        finalTarget = null;
         if (lastFocus && lastFocus.focus) lastFocus.focus();
       }
     );
+  }
+
+  function parseTransform(str){
+    var m = /translate3d\(([-\d.]+)px,\s*([-\d.]+)px[^)]*\)\s*scale\(([-\d.]+),\s*([-\d.]+)\)/.exec(str);
+    if (m) return { x:+m[1], y:+m[2], sx:+m[3], sy:+m[4] };
+    return { x:0, y:0, sx:1, sy:1 };
   }
 
   /* ── Event delegation ─────────────────────────────────────────── */
