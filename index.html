@@ -39,8 +39,9 @@
 <link rel="preconnect" href="https://blogsaverroes.juntadeandalucia.es" crossorigin>
 <link rel="dns-prefetch" href="https://blogsaverroes.juntadeandalucia.es">
 <link rel="preload" as="image" href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png" fetchpriority="high">
-<link rel="preload" as="image" href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" fetchpriority="high" media="(min-width:320px)">
-<!-- Font loading async — no bloquea first paint (técnica Smashing/Filament Group) -->
+<!-- Hero bg image preload (LCP) — fetchpriority high, sin media query que invalidaba el hint -->
+<link rel="preload" as="image" href="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg" fetchpriority="high">
+<!-- Font loading async — no bloquea first paint (técnica Filament Group) -->
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"></noscript>
 <script type="application/ld+json">
@@ -53,7 +54,7 @@
   "logo": "https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/cropped-diseno-7.png",
   "image": "https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg",
   "description": "Centro educativo público en Santaella (Córdoba) con ESO, Bachillerato y FP Básica.",
-  "telephone": "+34957313455",
+  "telephone": "+34957307535",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "C. Villargallegos s/n",
@@ -104,8 +105,6 @@
 }
 
 html{
-  /* scroll-behavior:smooth eliminado adrede — lo gestionamos con rAF en JS
-     para evitar conflicto con window.scrollTo({behavior:'smooth'}) */
   scroll-padding-top:calc(var(--nav-h) + 12px);
   -webkit-tap-highlight-color:transparent;
   text-size-adjust:100%;-webkit-text-size-adjust:100%;
@@ -113,16 +112,8 @@ html{
 /* scroll-margin en section[id] — respetado por anchor nav nativo (fallback) */
 section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
 
-/* Durante scroll automático: desactivamos hover effects costosos
-   → libera main thread para que el scroll sea 60fps puro */
-html.is-scrolling *,
-html.is-scrolling *::before,
-html.is-scrolling *::after{
-  transition-duration:0s!important;
-  animation-duration:0s!important;
-  animation-delay:0s!important;
-}
-/* Re-activamos pointer-events-none en magnetic hovers durante scroll */
+/* Durante scroll automático SOLO desactivamos los magnetic hovers (rAF cosumidores)
+   — las animaciones fade-up/stagger se mantienen 100% funcionales */
 html.is-scrolling a.oferta-tag,
 html.is-scrolling a.plan-item,
 html.is-scrolling a.select-tag{pointer-events:none}
@@ -149,36 +140,34 @@ ul,ol{list-style:none}
 /* --- Staggered Reveal --- */
 .fade-up{
   opacity:0;
-  transform:translate3d(0,20px,0);
-  transition:opacity var(--dur-slow) var(--ease-out-expo),
-             transform var(--dur-slow) var(--ease-out-expo);
-  will-change:opacity,transform;
+  transform:translate3d(0,18px,0);
+  transition:opacity 420ms var(--ease-out-expo),
+             transform 420ms var(--ease-out-expo);
+  /* will-change SOLO mientras está animando (añadido por JS vía .animating)
+     evita promover 43+ layers permanentemente a GPU (mata móviles) */
 }
+.fade-up.animating{will-change:opacity,transform}
 .fade-up.visible{opacity:1;transform:translate3d(0,0,0)}
 
-/* Richer stagger with dynamic delays */
+/* Stagger más rápido — menos frames simultáneos */
 .stagger>.fade-up:nth-child(1) {transition-delay:0s}
-.stagger>.fade-up:nth-child(2) {transition-delay:.06s}
-.stagger>.fade-up:nth-child(3) {transition-delay:.12s}
-.stagger>.fade-up:nth-child(4) {transition-delay:.18s}
-.stagger>.fade-up:nth-child(5) {transition-delay:.24s}
-.stagger>.fade-up:nth-child(6) {transition-delay:.30s}
-.stagger>.fade-up:nth-child(7) {transition-delay:.36s}
-.stagger>.fade-up:nth-child(8) {transition-delay:.42s}
-.stagger>.fade-up:nth-child(9) {transition-delay:.48s}
-.stagger>.fade-up:nth-child(10){transition-delay:.54s}
-.stagger>.fade-up:nth-child(11){transition-delay:.60s}
-.stagger>.fade-up:nth-child(12){transition-delay:.66s}
-.stagger>.fade-up:nth-child(n+13){transition-delay:.72s}
+.stagger>.fade-up:nth-child(2) {transition-delay:.04s}
+.stagger>.fade-up:nth-child(3) {transition-delay:.08s}
+.stagger>.fade-up:nth-child(4) {transition-delay:.12s}
+.stagger>.fade-up:nth-child(5) {transition-delay:.16s}
+.stagger>.fade-up:nth-child(6) {transition-delay:.20s}
+.stagger>.fade-up:nth-child(7) {transition-delay:.22s}
+.stagger>.fade-up:nth-child(8) {transition-delay:.24s}
+.stagger>.fade-up:nth-child(n+9){transition-delay:.26s}
 
 /* --- Fade-in from scale (cards, modals) --- */
 .fade-scale{
   opacity:0;
   transform:translate3d(0,0,0) scale(.96);
-  transition:opacity var(--dur-slow) var(--ease-out-expo),
-             transform var(--dur-slow) var(--ease-spring);
-  will-change:opacity,transform;
+  transition:opacity 420ms var(--ease-out-expo),
+             transform 420ms var(--ease-spring);
 }
+.fade-scale.animating{will-change:opacity,transform}
 .fade-scale.visible{opacity:1;transform:translate3d(0,0,0) scale(1)}
 
 /* --- Hero entrance (critical path, no delay) --- */
@@ -269,7 +258,11 @@ ul,ol{list-style:none}
   content:'';position:absolute;inset:0;
   background:url('https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg') center/cover;
   opacity:.12;
-  will-change:transform; /* parallax layer */
+  /* Parallax via transform translate3d (GPU compositor) + custom property */
+  transform:translate3d(0, var(--parallax-y, 0), 0);
+  will-change:transform;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
 }
 .hero::after{
   content:'';position:absolute;inset:0;
@@ -450,11 +443,11 @@ ul,ol{list-style:none}
 .gallery-item{
   border-radius:var(--r);overflow:hidden;position:relative;aspect-ratio:4/3;
   box-shadow:var(--sh-sm);cursor:zoom-in;
-  transform:translateZ(0);backface-visibility:hidden;
+  backface-visibility:hidden;
   transition:transform var(--dur-mid) var(--ease-spring),
              box-shadow var(--dur-mid) var(--ease-smooth);
 }
-.gallery-item:hover{transform:translateZ(0) scale(1.02);box-shadow:var(--sh-lg)}
+.gallery-item:hover{transform:scale(1.02);box-shadow:var(--sh-lg)}
 .gallery-item.wide{grid-column:1/-1;aspect-ratio:16/9}
 .gallery-item img{
   width:100%;height:100%;object-fit:cover;
@@ -698,7 +691,6 @@ a.oferta-tag:focus-visible{outline:2px solid var(--b500);outline-offset:2px}
 .inst-gal img{
   width:100%;aspect-ratio:4/3;object-fit:cover;
   border-radius:10px;cursor:zoom-in;display:block;
-  transform:translateZ(0);
   backface-visibility:hidden;-webkit-backface-visibility:hidden;
   transition:transform 280ms cubic-bezier(.34,1.44,.64,1),
              box-shadow 280ms ease,
@@ -1086,15 +1078,15 @@ a.card-link:focus-visible{outline:2px solid var(--b500);outline-offset:3px;borde
 .oferta-top.fbo{background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%)}
 
 /* ═══════════════════════════════════════════════════════════════════
-   GPU PROMOTION · Cards & pills (60fps garantizado en mobile)
-   ═══════════════════════════════════════════════════════════════════ */
-.oferta-card,.plan-card,.select-card,.gallery-item,.act-card,.teatro-item,.link-card,.contact-card,.team-card,.gallery-card{
-  transform:translateZ(0);         /* promueve a GPU layer permanente */
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-}
+   GPU PROMOTION — CONSERVADORA · solo backface, sin forzar layer
+   ═══════════════════════════════════════════════════════════════════
+   Antes: translateZ(0) permanente en decenas de elementos = decenas de
+   compositor layers en memoria → lag de scroll en móviles gama baja.
+   Ahora: sólo backface-visibility (reduce paint cost) y dejamos que
+   el browser decida cuándo promover. La promoción real se activa al
+   hover/animating via otros reglas CSS cuando REALMENTE se necesita. */
+.oferta-card,.plan-card,.select-card,.gallery-item,.act-card,.teatro-item,.link-card,.contact-card,.team-card,.gallery-card,
 a.oferta-tag,a.plan-item,a.select-tag{
-  transform:translate3d(0,0,0);    /* layer propio para magnetic hover */
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
 }
@@ -1117,7 +1109,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
     <div class="topnav-title">IES Arcelacis</div>
   </a>
   <div class="topnav-actions">
-    <a href="tel:957313455" class="topnav-btn" aria-label="Llamar al centro">
+    <a href="tel:957307535" class="topnav-btn" aria-label="Llamar al centro">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
     </a>
     <a href="mailto:14006576.edu@juntadeandalucia.es" class="topnav-btn" aria-label="Enviar email">
@@ -1167,7 +1159,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
   </div>
   <div class="about-card fade-up">
     <img src="https://blogsaverroes.juntadeandalucia.es/ies-arcelacis-santaella/files/2025/10/IMG_5597-scaled.jpeg"
-         alt="Fachada principal del IES Arcelacis con banderas" class="about-img" loading="lazy" width="800" height="220" / decoding="async">
+         alt="Fachada principal del IES Arcelacis con banderas" class="about-img" loading="lazy" width="800" height="220" decoding="async">
     <div class="about-body">
       <h3>Educación con valores</h3>
       <p>Situado en la C. Villargallegos de Santaella, nuestro centro ofrece ESO, Bachillerato y FP Básica en un entorno que fomenta el aprendizaje competencial, el trabajo en equipo y el compromiso social.</p>
@@ -1925,9 +1917,9 @@ a.oferta-tag,a.plan-item,a.select-tag{
       <p class="section-desc">Estamos aquí para ayudarte</p>
     </div>
     <div class="contact-grid stagger">
-      <a href="tel:957313455" class="contact-card fade-up">
+      <a href="tel:957307535" class="contact-card fade-up">
         <div class="contact-icon" aria-hidden="true">📞</div>
-        <div><div class="contact-name">Teléfono</div><div class="contact-val">957 31 34 55</div></div>
+        <div><div class="contact-name">Teléfono</div><div class="contact-val">957 30 75 35</div></div>
       </a>
       <a href="mailto:14006576.edu@juntadeandalucia.es" class="contact-card fade-up">
         <div class="contact-icon" aria-hidden="true">📧</div>
@@ -1972,7 +1964,7 @@ a.oferta-tag,a.plan-item,a.select-tag{
          alt="IES Arcelacis" width="34" height="34" loading="lazy" decoding="async">
   </div>
   <p><strong>IES Arcelacis</strong> — Santaella, Córdoba</p>
-  <p style="margin-top:3px">C. Villargallegos, s/n · Tel. 957 31 34 55</p>
+  <p style="margin-top:3px">C. Villargallegos, s/n · Tel. 957 30 75 35</p>
   <p style="margin-top:8px;font-size:.65rem">Consejería de Desarrollo Educativo y Formación Profesional · Junta de Andalucía</p>
   <p style="margin-top:5px;font-size:.6rem;opacity:.4">Desarrollado por O.N.E Agency</p>
 </footer>
@@ -2056,10 +2048,19 @@ a.oferta-tag,a.plan-item,a.select-tag{
     const revealIO = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          /* Unobserve inmediato — evita re-renders al hacer scroll de vuelta
-             (bug previo: quitaba .visible al salir del viewport, forzando relayout) */
-          revealIO.unobserve(entry.target);
+          const el = entry.target;
+          /* will-change activado JUSTO antes de animar (liberado al terminar) */
+          el.classList.add('animating');
+          el.classList.add('visible');
+          revealIO.unobserve(el);
+          /* Libera el GPU layer al terminar la transición — evita 43+ layers permanentes */
+          const cleanup = () => {
+            el.classList.remove('animating');
+            el.removeEventListener('transitionend', cleanup);
+          };
+          el.addEventListener('transitionend', cleanup, { once: true });
+          /* Fallback por si no dispara transitionend (elemento oculto, etc.) */
+          setTimeout(cleanup, 900);
         }
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
@@ -2122,9 +2123,10 @@ a.oferta-tag,a.plan-item,a.select-tag{
       if ((topNav.classList.contains('scrolled')) !== scrolled){
         topNav.classList.toggle('scrolled', scrolled);
       }
-      /* Parallax: sólo si el hero está visible */
-      if (hero && sy < heroVisibleThreshold){
-        hero.style.setProperty('--parallax-y', (sy * 0.14) + 'px');
+      /* Parallax: sólo si el hero está visible Y no estamos en scroll automático
+         (evita frames caros durante anchor-scroll a secciones lejanas) */
+      if (hero && sy < heroVisibleThreshold && !document.documentElement.classList.contains('is-scrolling')){
+        hero.style.setProperty('--parallax-y', (sy * 0.08) + 'px');  // 0.14 → 0.08 (menos shift, menos paint)
       }
       lastScrollY = sy;
       unifiedTicking = false;
@@ -2798,7 +2800,6 @@ if ('serviceWorker' in navigator) {
     if (killTimer) clearTimeout(killTimer);
     killTimer = setTimeout(function(){
       /* Si tras 900ms la animación no terminó, reset duro */
-      console.warn('[lbx] kill-switch triggered');
       killSwitch();
     }, 900);
   }
